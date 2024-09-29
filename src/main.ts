@@ -19,7 +19,7 @@ enum EditType {
 
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
-  const menu = ui.createMenu('Bluestone Audit Log Menu');
+  const menu = ui.createMenu('SheetsGPT Menu');
   menu.addItem('Authorize', 'authorizeApp').addToUi();
   menu.addItem('Reset Triggers', 'resetTriggersUi').addToUi();
   menu.addItem('Open Audit Log Sheet', 'openAuditLogSheet').addToUi();
