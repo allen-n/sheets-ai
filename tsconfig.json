@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "lib": ["esnext"],
+    "experimentalDecorators": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "target": "ES2019",
+    "baseUrl": "./src", // Set the base URL to the src directory
+    "paths": {
+      "@/*": ["*"] // Alias @ to the src directory
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
+}

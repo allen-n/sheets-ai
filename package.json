@@ -1,0 +1,16 @@
+{
+  "name": "sheets-gpt",
+  "version": "0.0.1",
+  "main": "index.js",
+  "scripts": {
+    "clasp:clone": "clasp clone \"1ZU5fIwLYzLydumthWp-wfbB_Nkfc0w6drsrgdPU8tCxWpZFJyBK3vPl4\" --rootDir ./src",
+    "clasp:push": "clasp push",
+    "clasp:watch": "clasp push --watch"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/google-apps-script": "^1.0.83"
+  }
+}
