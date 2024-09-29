@@ -5,6 +5,7 @@ export type LLMProviders = 'openai';
 export interface ChatMessageContent {
   type: 'text' | 'image_url' | 'tool';
 }
+
 export interface TextChatMessageContent extends ChatMessageContent {
   type: 'text';
   text: string;

@@ -3,9 +3,12 @@
   "version": "0.0.1",
   "main": "index.js",
   "scripts": {
-    "clasp:clone": "clasp clone \"1ZU5fIwLYzLydumthWp-wfbB_Nkfc0w6drsrgdPU8tCxWpZFJyBK3vPl4\" --rootDir ./src",
+    "clasp:clone": "clasp clone \"161fodtnGP1ly2gjXCHpqyb-9G5x207ij7xP4PP85b5Cb1VthYuKwtbBq\" --rootDir ./src",
     "clasp:push": "clasp push",
-    "clasp:watch": "clasp push --watch"
+    "clasp:watch": "clasp push --watch",
+    "clasp:open": "clasp open",
+    "clasp:logs": "clasp logs",
+    "clasp:login": "clasp login"
   },
   "author": "",
   "license": "ISC",
