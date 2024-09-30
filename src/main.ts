@@ -1,9 +1,46 @@
 import { SheetsGPTError } from '@/common/utils';
 import { LLMProviders } from '@/llm/provider/base';
+import { OpenAIProvider } from '@/llm/provider/openai';
+
+const MenuItemName = 'SheetsGPT Menu';
+
+async function gpt(query: string) {
+  const apiKey = new SecretService().getSecret('USER_OPENAI_KEY');
+  if (!apiKey) {
+    const ui = SpreadsheetApp.getUi();
+    ui.alert(
+      'Your OpenAI key is not set! Please set it now in ' +
+        MenuItemName +
+        ' in the top nar (right of "Help")',
+      ui.ButtonSet.OK_CANCEL
+    );
+    return;
+  }
+
+  try {
+    const openai = new OpenAIProvider('gpt-4o-2024-08-06', apiKey);
+    const completion = await openai.generateChatCompletion({
+      messages: [
+        {
+          role: 'system',
+          content:
+            'You are a helpful assistant that is an expert in Google Sheets, and manipulating data into input/output formats that are useable therein. Follow instructions as closely as possible.',
+        },
+        { role: 'user', content: query },
+      ],
+    });
+    return completion.text;
+  } catch (error: Error | any) {
+    console.error('Failed to make Open AI call: ' + error);
+    throw new SheetsGPTError(
+      'Failed to make Open AI call: please make sure your API key is correct!'
+    );
+  }
+}
 
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
-  const menu = ui.createMenu('SheetsGPT Menu');
+  const menu = ui.createMenu(MenuItemName);
   menu
     .addItem('Authorize', 'authorizeApp')
     .addItem('Set API Keys', 'setLLmApiKeys')
@@ -20,7 +57,7 @@ function authorizeApp() {
 
   if (response == ui.Button.OK) {
     try {
-      PropertiesService.getDocumentProperties();
+      PropertiesService.getUserProperties();
       ui.alert('Authorization successful!');
     } catch (e) {
       ui.alert('Authorization failed. Please try again. Error: ' + e);
@@ -47,7 +84,7 @@ function getStoredApiKey(provider: LLMProviders): string {
   switch (provider) {
     case 'openai':
       const key = secretService.getSecret('USER_OPENAI_KEY');
-      return key ? key.substring(0, 8) + '********' : '';
+      return key ? key.substring(0, 16) + '********' : '';
     default:
       throw new SheetsGPTError('Invalid LLM Provider selected: ' + provider);
   }

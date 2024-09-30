@@ -54,8 +54,8 @@ export class OpenAIProvider implements ILLMProvider {
   }: {
     messages: Array<LLMMessage>;
     tools?: Array<Tool>;
-    maxTokens: number;
-    model: OpenAiModelNames;
+    maxTokens?: number;
+    model?: OpenAiModelNames;
   }): Promise<OpenaiCompletion> {
     const openAiMessages = messages.map((message) => ({
       role: message.role,
