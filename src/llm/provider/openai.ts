@@ -10,7 +10,11 @@ import {
   TextChatMessageContent,
 } from '@/llm/provider/base';
 import { Tool } from '@/llm/tool/base';
-import { OpenAiEndpoint, OpenAiModelNames } from '@/llm/types/openai';
+import {
+  OpenAiChatMessage,
+  OpenAiEndpoint,
+  OpenAiModelNames,
+} from '@/llm/types/openai';
 
 export class OpenAIProvider implements ILLMProvider {
   private apiService: ApiService;
@@ -33,17 +37,23 @@ export class OpenAIProvider implements ILLMProvider {
   private parseToolCall<T extends Tool>(
     choice: any,
     tool: T
-  ): { tool: T; args: any } | undefined {
+  ): Array<{ tool: T; args: Parameters<T['execute']>[0] }> | undefined {
     const toolNames = choice.message.tool_calls;
     if (!toolNames) {
       return undefined;
     }
-    const toolCall = toolNames[0];
-    if (toolCall.function.name === tool.name && toolCall.type === 'function') {
-      return { tool: tool, args: JSON.parse(toolCall.function.arguments) };
+
+    const ret: Array<{ tool: T; args: Parameters<T['execute']>[0] }> = [];
+    for (const t of toolNames) {
+      if (t.function.name === tool.name && t.type === 'function') {
+        ret.push({ tool: tool, args: JSON.parse(t.function.arguments) });
+      }
+    }
+    if (ret.length === 0) {
+      return undefined;
     }
 
-    return undefined;
+    return ret;
   }
 
   async generateChatCompletion({
@@ -57,11 +67,13 @@ export class OpenAIProvider implements ILLMProvider {
     maxTokens?: number;
     model?: OpenAiModelNames;
   }): Promise<OpenaiCompletion> {
-    const openAiMessages = messages.map((message) => ({
-      role: message.role,
-      content: message.content,
-      tool_calls: message.tool_calls,
-    }));
+    const openAiMessages: Array<OpenAiChatMessage> = messages.map(
+      (message) => ({
+        role: message.role,
+        content: message.content,
+        tool_calls: message.tool_calls,
+      })
+    );
 
     const openAiFunctions = tools?.map((tool) => ({
       type: 'function',
@@ -90,25 +102,27 @@ export class OpenAIProvider implements ILLMProvider {
           continue;
         }
 
-        const exec = parsed.tool.execute(parsed.args);
-        const toolCall = choice.message.tool_calls
-          ? choice.message.tool_calls[0]
+        const execPromises = parsed.map((p) => p.tool.execute(p.args));
+        const exec = await Promise.all(execPromises);
+        const toolCalls = !!choice.message.tool_calls
+          ? choice.message.tool_calls
           : undefined;
-        if (!toolCall) {
+        if (!toolCalls) {
           throw new OpenAiProviderError('Tool call not found in completion');
         }
-        const functionCallResultMessage = {
-          role: 'tool' as LLMMessageRole,
-          content: JSON.stringify(exec),
-          tool_call_id: toolCall?.id as string,
-          tool_calls: undefined,
-        };
+        const functionCallResultMessages: Array<OpenAiChatMessage> = exec.map(
+          (e, i) => ({
+            role: 'tool',
+            content: JSON.stringify(e),
+            tool_call_id: toolCalls[i].id,
+          })
+        );
         openAiMessages.push({
           content: choice.message.content ?? '',
           role: choice.message.role,
           tool_calls: choice.message.tool_calls,
         });
-        openAiMessages.push(functionCallResultMessage);
+        openAiMessages.push(...functionCallResultMessages);
         const finalResponse = this.apiService.post('/v1/chat/completions', {
           model: model,
           messages: openAiMessages,
