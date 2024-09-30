@@ -1,11 +1,16 @@
 // https://developers.google.com/apps-script/guides/triggers/installable#manage_triggers_programmatically
-namespace triggers {
+
+export class TriggerService {
+  constructor(private triggers: GoogleAppsScript.Script.Trigger[]) {
+    this.triggers = ScriptApp.getProjectTriggers();
+  }
+
   /**
    * Deletes a trigger.
    * @param {string} triggerId The Trigger ID.
    * @see https://developers.google.com/apps-script/guides/triggers/installable
    */
-  export function deleteAllTriggers() {
+  deleteAllTriggers() {
     // Loop over all triggers.
     const allTriggers = ScriptApp.getProjectTriggers();
     allTriggers.forEach((trigger) => {
@@ -14,7 +19,7 @@ namespace triggers {
     });
   }
 
-  export function createTriggers() {
+  createTriggers() {
     const triggers = ScriptApp.getProjectTriggers();
     if (triggers.length === 0) {
       ScriptApp.newTrigger('fireOnEdit')
@@ -24,5 +29,3 @@ namespace triggers {
     }
   }
 }
-
-export { triggers };

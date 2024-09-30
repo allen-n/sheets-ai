@@ -26,7 +26,6 @@ export interface LLMUsage {
   prompt_tokens: number;
   completion_tokens: number;
   total_tokens: number;
-  duration_ms?: number;
 }
 
 export interface LLMRequestMetadata {

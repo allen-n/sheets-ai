@@ -4,7 +4,7 @@ type SecretMap = {
   USER_OPENAI_KEY: string;
 };
 
-class SecretService {
+export class SecretService {
   private userProperties = PropertiesService.getUserProperties();
 
   /**
