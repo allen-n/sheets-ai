@@ -1,17 +1,17 @@
-import { SheetsGPTError } from '@/common/utils';
+import { SheetsAIError } from '@/common/utils';
 import { LLMProviders } from '@/llm/provider/base';
 import { OpenAIProvider } from '@/llm/provider/openai';
 import { SecretService } from '@/sheets/secrets';
 import { LLMUsageService } from '@/sheets/storage/llm-usage';
 
-const AppMenuName = 'SheetsGPT Menu';
+const AppMenuName = 'SheetsAI Menu';
 const AppMenuMapping = new Map<string, string>([
   ['Authorize', authorizeApp.name],
   ['Set API Keys', setLLmApiKeys.name],
 ]);
 
 /**
- * Generates text using a large language model. Defaults to GPT-4o. Requires API key to be set in the `SheetsGPT Menu > Set API Keys` menu.
+ * Generates text using a large language model. Defaults to GPT-4o. Requires API key to be set in the `SheetsAI Menu > Set API Keys` menu.
  * @param {string} query The query for the model, i.e. "What is the capital of the United States?" or "Is the animal in this cell a feline?"
  * @param {string | undefined} context [optional] If provided, will add this context into the query, i.e. if asking "Is the animal in this cell a feline?" and the context is a cell containing the word "Cat" or "dog".
  * @returns {string} The generated text from the model.
@@ -50,7 +50,7 @@ async function gpt(query: string, context?: string): Promise<string | void> {
     return completion.text;
   } catch (error: Error | any) {
     console.error('Failed to make Open AI call: ' + error);
-    throw new SheetsGPTError(
+    throw new SheetsAIError(
       'Failed to make Open AI call: please make sure your API key is correct!'
     );
   }
@@ -75,7 +75,7 @@ function onInstall() {
   onOpen();
   const ui = SpreadsheetApp.getUi();
   ui.alert(
-    'SheetsGPT has been installed! You can now access the SheetsGPT menu in the top navigation bar, under "' +
+    'SheetsAI has been installed! You can now access the SheetsAI menu in the top navigation bar, under "' +
       AppMenuName +
       '".\n\nPlease head over there to authorize the app with the permissions it needs to run, under "' +
       AppMenuName +
@@ -124,7 +124,7 @@ function getStoredApiKey(provider: LLMProviders): string {
       const key = secretService.getSecret('USER_OPENAI_KEY');
       return key ? key.substring(0, 16) + '********' : '';
     default:
-      throw new SheetsGPTError('Invalid LLM Provider selected: ' + provider);
+      throw new SheetsAIError('Invalid LLM Provider selected: ' + provider);
   }
 }
 
@@ -136,6 +136,6 @@ function saveApiKey(provider: LLMProviders, key: string) {
       secretService.setSecret('USER_OPENAI_KEY', key);
       return `OpenAI API Key saved successfully!`;
     default:
-      throw new SheetsGPTError('Invalid LLM Provider selected: ' + provider);
+      throw new SheetsAIError('Invalid LLM Provider selected: ' + provider);
   }
 }

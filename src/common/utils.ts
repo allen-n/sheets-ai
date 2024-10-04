@@ -7,4 +7,4 @@
  */
 export const delayMs = (ms: number) => Utilities.sleep(ms);
 
-export class SheetsGPTError extends Error {}
+export class SheetsAIError extends Error {}
