@@ -86,6 +86,7 @@ This project is a Google Sheets add-on developed using Google Apps Script and Ty
 3. Commit your changes (`git commit -am 'Add some feature'`).
 4. Push to the branch (`git push origin yourUsername/YourFeature`).
 5. Open a pull request.
+6. Once approved, _squash and merge_ your branch.
 
 ## License
 
