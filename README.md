@@ -1,4 +1,6 @@
-# Google Sheets Add-on
+# SheetsAI
+
+[![CC BY-NC 4.0][cc-by-nc-shield]][cc-by-nc]
 
 This project is a Google Sheets add-on developed using Google Apps Script and TypeScript. It provides access to LLMs providers conveniently inside of google sheets. Currently, it supports the following providers:
 
@@ -19,52 +21,42 @@ This project is a Google Sheets add-on developed using Google Apps Script and Ty
 1. **Clone the Repository**:
 
    ```bash
-   git clone https://github.com/yourusername/your-repo.git
-   cd your-repo
+   git clone https://github.com/allen-n/sheets-ai
+   cd sheets-ai
    ```
 
 2. **Install Dependencies**:
    Ensure you have Node.js and npm installed, then run:
 
    ```bash
-   npm install
+   npm i pnpm -g
+   pnpm install
    ```
 
-3. **Set Up Clasp**:
-   Install `clasp` globally if you haven't already:
-
-   ```bash
-   npm install -g @google/clasp
-   ```
-
-4. **Authenticate Clasp**:
+3. **Authenticate Clasp**:
    Run the following command and follow the instructions to authenticate:
 
    ```bash
-   clasp login
+   pnpm clasp login
    ```
 
 ## Development
 
-1. **Compile TypeScript**:
-   Compile the TypeScript files to JavaScript:
+1. **Create your .clasp.json**:
+   Create a `.clasp.json` at the top level of the directory that mirrors [example.clasp.json](./example.clasp.json).
+2. **Replace the script ID with the ID of your Google Apps Script project**
 
-   ```bash
-   npm run build
-   ```
+   - Navigate to `https://docs.google.com/spreadsheets/` and open the sheet you want to develop the add-on in.
+   - Click on `Extensions` -> `Apps Script`
+   - Navigate to `Project Settings` (the gear icon.)
+   - Copy the Script id listed on the settings page.
 
-2. **Push to Google Apps Script**:
+3. **Push to Google Apps Script**:
    Use `clasp` to push your code to Google Apps Script:
 
    ```bash
-   npm run push
-   ```
-
-3. **Open the Script Editor**:
-   Open the Google Apps Script editor to view your project:
-
-   ```bash
-   clasp open
+   pnpm clasp:push # single push
+   pnpm clasp:watch # watch for changes and push
    ```
 
 ## Deployment
@@ -97,4 +89,11 @@ This project is a Google Sheets add-on developed using Google Apps Script and Ty
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This work is licensed under a
+[Creative Commons Attribution-NonCommercial 4.0 International License][cc-by-nc].
+
+[![CC BY-NC 4.0][cc-by-nc-image]][cc-by-nc]
+
+[cc-by-nc]: https://creativecommons.org/licenses/by-nc/4.0/
+[cc-by-nc-image]: https://licensebuttons.net/l/by-nc/4.0/88x31.png
+[cc-by-nc-shield]: https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey.svg
