@@ -1,9 +1,9 @@
 {
-  "name": "sheets-gpt",
+  "name": "sheets-ai",
   "version": "0.0.1",
   "main": "index.js",
   "scripts": {
-    "clasp:clone": "clasp clone \"161fodtnGP1ly2gjXCHpqyb-9G5x207ij7xP4PP85b5Cb1VthYuKwtbBq\" --rootDir ./src",
+    "clasp": "clasp",
     "clasp:push": "clasp push",
     "clasp:watch": "clasp push --watch",
     "clasp:open": "clasp open",
@@ -14,6 +14,7 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
-    "@types/google-apps-script": "^1.0.83"
+    "@types/google-apps-script": "^1.0.83",
+    "clasp": "^1.0.0"
   }
 }
