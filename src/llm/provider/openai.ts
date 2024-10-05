@@ -2,25 +2,23 @@ import { ApiService } from '@/api/base';
 import {
   ILLMProvider,
   ILLMProviderError,
-  ImageChatMessageContent,
   LLMCompletion,
   LLMMessage,
-  LLMMessageRole,
   LLMRequestMetadata,
-  TextChatMessageContent,
 } from '@/llm/provider/base';
 import { Tool } from '@/llm/tool/base';
 import {
   OpenAiChatMessage,
   OpenAiEndpoint,
   OpenAiModelNames,
+  OpenAiTextModelNames,
 } from '@/llm/types/openai';
 
 export class OpenAIProvider implements ILLMProvider {
   private apiService: ApiService;
   private defaultModel: OpenAiModelNames;
 
-  constructor(defaultModel: OpenAiModelNames, apiKey: string) {
+  constructor(defaultModel: OpenAiTextModelNames, apiKey: string) {
     this.apiService = new ApiService('https://api.openai.com', {
       Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',

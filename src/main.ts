@@ -8,6 +8,7 @@ const AppMenuName = 'SheetsAI Menu';
 const AppMenuMapping = new Map<string, string>([
   ['Authorize', authorizeApp.name],
   ['Set API Keys', setLLmApiKeys.name],
+  ['Get Help', redirectToSite.name],
 ]);
 
 /**
@@ -17,7 +18,10 @@ const AppMenuMapping = new Map<string, string>([
  * @returns {string} The generated text from the model.
  * @customfunction
  */
-async function gpt(query: string, context?: string): Promise<string | void> {
+async function SHEETS_AI(
+  query: string,
+  context?: string
+): Promise<string | void> {
   const apiKey = new SecretService().getSecret('USER_OPENAI_KEY');
   if (!apiKey) {
     const ui = SpreadsheetApp.getUi();
@@ -54,6 +58,14 @@ async function gpt(query: string, context?: string): Promise<string | void> {
       'Failed to make Open AI call: please make sure your API key is correct!'
     );
   }
+}
+
+function redirectToSite() {
+  const ui = SpreadsheetApp.getUi();
+  const html = HtmlService.createHtmlOutput(
+    '<script>window.open("https://trysheetsai.com")</script>'
+  );
+  ui.showModelessDialog(html, 'Redirecting to SheetsAI website...');
 }
 
 /**
@@ -117,12 +129,17 @@ function listLLMProviders(): Map<LLMProviders, string> {
   return new Map<LLMProviders, string>([['openai', 'OpenAI']]);
 }
 // Function to get the stored OpenAI API key (shows only the first 8 characters)
-function getStoredApiKey(provider: LLMProviders): string {
+function getStoredApiKey(provider: LLMProviders): {
+  key: string;
+  instructionUrl: string;
+} {
   const secretService = new SecretService();
+  const instructionUrl = getApiKeyInstructions(provider);
   switch (provider) {
     case 'openai':
       const key = secretService.getSecret('USER_OPENAI_KEY');
-      return key ? key.substring(0, 16) + '********' : '';
+      const returnKey = key ? key.substring(0, 16) + '********' : '';
+      return { key: returnKey, instructionUrl };
     default:
       throw new SheetsAIError('Invalid LLM Provider selected: ' + provider);
   }
@@ -135,6 +152,15 @@ function saveApiKey(provider: LLMProviders, key: string) {
       const secretService = new SecretService();
       secretService.setSecret('USER_OPENAI_KEY', key);
       return `OpenAI API Key saved successfully!`;
+    default:
+      throw new SheetsAIError('Invalid LLM Provider selected: ' + provider);
+  }
+}
+
+function getApiKeyInstructions(provider: LLMProviders) {
+  switch (provider) {
+    case 'openai':
+      return `https://trysheetsai.com/apikeys/openai`;
     default:
       throw new SheetsAIError('Invalid LLM Provider selected: ' + provider);
   }
