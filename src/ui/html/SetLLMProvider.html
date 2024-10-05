@@ -14,6 +14,9 @@
         height: 100vh;
         margin: 0;
       }
+      .hints {
+        margin-bottom: 5px;
+      }
       .config-container {
         background-color: #ffffff;
         padding: 20px;
@@ -130,8 +133,17 @@
 
         <div class="input-group">
           <label for="api-key">API Key</label>
-          <div>
+          <div class="hints">
             <p class="description" id="current-api-key"></p>
+            <a
+              href="#"
+              target="_blank"
+              rel="noopener"
+              aria-label="API Key Instructions"
+              id="api-key-instructions-href"
+              class="description"
+            >
+            </a>
           </div>
           <div class="input-wrapper">
             <input
@@ -153,12 +165,24 @@
       // Fetch and display the current OpenAI Key when the modal loads
       function getCurrentApiKey(provider) {
         google.script.run
-          .withSuccessHandler(function (storedKey) {
+          .withSuccessHandler(function (data) {
+            const storedKey = data.key;
+            const instructionUrl = data.instructionUrl;
             const elem = document.getElementById('current-api-key');
+
+            const instructionHrefElem = document.getElementById(
+              'api-key-instructions-href'
+            );
+
             if (storedKey) {
               elem.textContent = 'Current key is: ' + storedKey || null;
             } else {
               elem.textContent = 'No key is currently set for this provider.';
+            }
+            if (instructionUrl) {
+              instructionHrefElem.innerHTML = `<a href="${instructionUrl}" target="_blank" rel="noopener">How to get an API Key</a>`;
+            } else {
+              instructionHrefElem.innerHTML = '';
             }
           })
           .getStoredApiKey(provider);

@@ -4,7 +4,7 @@ import {
 } from '@/llm/provider/base';
 // https://platform.openai.com/docs/models/model-endpoint-compatibility
 // Define a type for the acceptable model names
-export type OpenAiModelNames =
+export type OpenAiTextModelNames =
   | 'chatgpt-4o-latest'
   | 'gpt-4o-2024-08-06'
   | 'gpt-4o-mini'
@@ -12,7 +12,10 @@ export type OpenAiModelNames =
   | 'gpt-3.5-turbo'
   | 'gpt-4o'
   | 'gpt-3.5-turbo-preview'
-  | 'gpt-3.5-turbo-1106'
+  | 'gpt-3.5-turbo-1106';
+
+export type OpenAiModelNames =
+  | OpenAiTextModelNames
   | 'whisper-1'
   | 'tts-1'
   | 'tts-1-hd'
