@@ -6,7 +6,6 @@ import { LLMUsageService } from '@/sheets/storage/llm-usage';
 
 const AppMenuName = 'SheetsAI Menu';
 const AppMenuMapping = new Map<string, string>([
-  ['Authorize', authorizeApp.name],
   ['Set API Keys', setLLmApiKeys.name],
   ['Get Help', redirectToSite.name],
 ]);
@@ -87,14 +86,13 @@ function onInstall() {
   onOpen();
   const ui = SpreadsheetApp.getUi();
   ui.alert(
-    'SheetsAI has been installed! You can now access the SheetsAI menu in the top navigation bar, under "' +
-      AppMenuName +
-      '".\n\nPlease head over there to authorize the app with the permissions it needs to run, under "' +
-      AppMenuName +
-      ' > ' +
-      AppMenuMapping.keys().next() +
-      '".'
+    `SheetsAI has been installed! You can now access the SheetsAI menu in the top navigation bar for help, under '${AppMenuName}'.`
   );
+  try {
+    PropertiesService.getUserProperties();
+  } catch (e) {
+    authorizeApp();
+  }
 }
 
 function authorizeApp() {
