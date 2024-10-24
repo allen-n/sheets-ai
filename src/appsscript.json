@@ -7,5 +7,26 @@
     "https://www.googleapis.com/auth/spreadsheets.currentonly",
     "https://www.googleapis.com/auth/script.external_request",
     "https://www.googleapis.com/auth/script.container.ui"
-  ]
+  ],
+  "urlFetchWhitelist": [
+    "https://trysheetsai.com/",
+    "https://openai.com/",
+    "https://api.openai.com/"
+  ],
+  "addOns": {
+    "common": {
+      "name": "SheetsAI",
+      "logoUrl": "https://trysheetsai.com/icon.png",
+      "useLocaleFromApp": true,
+      "openLinkUrlPrefixes": [
+        "https://trysheetsai.com"
+      ]
+    },
+    "sheets": {
+      "homepageTrigger": {
+        "runFunction": "onOpen",
+        "enabled": true
+      }
+    }
+  }
 }

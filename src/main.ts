@@ -17,7 +17,7 @@ const AppMenuMapping = new Map<string, string>([
  * @returns {string} The generated text from the model.
  * @customfunction
  */
-async function SHEETS_AI(
+export async function SHEETS_AI(
   query: string,
   context?: string
 ): Promise<string | void> {
@@ -86,7 +86,7 @@ function onInstall() {
   onOpen();
   const ui = SpreadsheetApp.getUi();
   ui.alert(
-    `SheetsAI has been installed! You can now access the SheetsAI menu in the top navigation bar for help, under '${AppMenuName}'.`
+    `SheetsAI has been installed! You can now access the SheetsAI menu in the top navigation bar for help, under 'Extensions > ${AppMenuName}'.`
   );
   try {
     PropertiesService.getUserProperties();
