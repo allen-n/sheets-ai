@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SheetsAI Help</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f0f0f0;
+        display: flex;
+        height: auto;
+        margin: 0;
+      }
+      .config-container {
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        width: 400px;
+      }
+      h2 {
+        margin-top: 0;
+        color: #333;
+      }
+      .button-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 10px;
+      }
+      .set-api-key-button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.3s;
+      }
+      .set-api-key-button:hover {
+        background-color: #0056b3;
+      }
+      .step {
+        margin-bottom: 20px;
+        display: flex;
+        flex-direction: column;
+      }
+      .step-title {
+        font-weight: bold;
+        color: #333;
+      }
+      .step-description {
+        margin-top: 5px;
+        color: #666;
+      }
+      .code-container {
+        background-color: #f7f7f7;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 10px;
+        font-family: monospace;
+        white-space: pre-wrap;
+        overflow-x: auto;
+        margin-top: 10px;
+        display: flex;
+        flex-direction: column;
+      }
+      code {
+        margin-bottom: 10px;
+        color: #333;
+        display: block;
+        white-space: pre-wrap;
+      }
+      .copy-button {
+        align-self: flex-start;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 5px 10px;
+        font-size: 12px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        transition: background-color 0.3s;
+      }
+      .copy-button:hover {
+        background-color: #0056b3;
+      }
+      .copy-notification {
+        margin-bottom: 10px;
+        color: #4caf50;
+        font-size: 12px;
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="config-container">
+      <h2>SheetsAI Help</h2>
+      <div class="step">
+        <div class="step-title">Get your API Key</div>
+        <div class="step-description">
+          If you don't already have one,
+          <a
+            href="https://example.com"
+            target="_blank"
+            rel="noopener"
+            id="openai-instructions"
+            >follow the instructions
+          </a>
+          to get an API key.
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-title">Set your API Key</div>
+        <div class="step-description">
+          Navigate to the settings and input your OpenAI API key securely (you
+          can use the button below).
+        </div>
+        <div class="button-container">
+          <button
+            class="set-api-key-button"
+            onclick="google.script.run.setLLmApiKeys()"
+          >
+            Set API Key
+          </button>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-title">Use the add-on!</div>
+        <div class="step-description">
+          Copy/paste the below into the sheet to see SheetsAI in action. Define
+          a prompt or provide context, and the AI will generate responses.
+        </div>
+        <div class="code-container">
+          <div class="copy-notification" id="copy-notification1">
+            Copied to clipboard
+          </div>
+          <code id="code1"> =SHEETS_AI("What is the capital of France?") </code>
+          <button class="copy-button" onclick="copyToClipboard('code1')">
+            <span class="copy-icon">📋</span> Copy
+          </button>
+        </div>
+        <p>Ask a question with no context 👆</p>
+        <div class="code-container">
+          <div class="copy-notification" id="copy-notification2">
+            Copied to clipboard
+          </div>
+          <code id="code2">
+            =SHEETS_AI("Translate the following text to French", A1)
+          </code>
+          <button class="copy-button" onclick="copyToClipboard('code2')">
+            <span class="copy-icon">📋</span> Copy
+          </button>
+        </div>
+        <p>
+          Add context (make sure to put some text in cell A1, or change it to a
+          cell with some text in it).
+        </p>
+      </div>
+    </div>
+    <script>
+      function copyToClipboard(codeId) {
+        const codeText = document.getElementById(codeId).innerText.trim();
+        navigator.clipboard.writeText(codeText).then(() => {
+          const notification = document.getElementById(
+            'copy-notification' + codeId.slice(-1)
+          );
+          notification.style.display = 'block';
+          setTimeout(() => {
+            notification.style.display = 'none';
+          }, 3000); // Auto-hide after 3 seconds
+        });
+      }
+
+      google.script.run
+        .withSuccessHandler(function (data) {
+          const a = document.getElementById('openai-instructions');
+          a.setAttribute('href', data);
+        })
+        .getApiKeyInstructions('openai');
+    </script>
+  </body>
+</html>

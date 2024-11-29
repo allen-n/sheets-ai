@@ -7,7 +7,7 @@ import { LLMUsageService } from '@/sheets/storage/llm-usage';
 const AppMenuName = 'SheetsAI Menu';
 const AppMenuMapping = new Map<string, string>([
   ['Set API Keys', setLLmApiKeys.name],
-  ['Get Help', redirectToSite.name],
+  ['Get Help', showHelpSidebar.name],
 ]);
 
 /**
@@ -59,14 +59,6 @@ export async function SHEETS_AI(
   }
 }
 
-function redirectToSite() {
-  const ui = SpreadsheetApp.getUi();
-  const html = HtmlService.createHtmlOutput(
-    '<script>window.open("https://trysheetsai.com")</script>'
-  );
-  ui.showModelessDialog(html, 'Redirecting to SheetsAI website...');
-}
-
 /**
  * Function to be called when the Google Sheets is opened.
  *
@@ -88,6 +80,7 @@ function onInstall() {
   ui.alert(
     `SheetsAI has been installed! You can now access the SheetsAI menu in the top navigation bar for help, under 'Extensions > ${AppMenuName}'.`
   );
+  showHelpSidebar();
   try {
     PropertiesService.getUserProperties();
   } catch (e) {
@@ -111,6 +104,15 @@ function authorizeApp() {
       ui.alert('Authorization failed. Please try again. Error: ' + e);
     }
   }
+}
+
+function showHelpSidebar() {
+  const htmlOutput = HtmlService.createHtmlOutputFromFile(
+    'ui/html/SideHelpBar.html'
+  )
+    .setTitle('SheetsAI Help')
+    .setWidth(300);
+  SpreadsheetApp.getUi().showSidebar(htmlOutput);
 }
 
 // Function to open the Set Secrets modal
