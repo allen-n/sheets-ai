@@ -1,4 +1,4 @@
-import { SheetsAIError } from '@/common/utils';
+import { hashString, SheetsAIError } from '@/common/utils';
 import { LLMProviders } from '@/llm/provider/base';
 import { OpenAIProvider } from '@/llm/provider/openai';
 import { SecretService } from '@/sheets/secrets';
@@ -8,7 +8,10 @@ const AppMenuName = 'SheetsAI Menu';
 const AppMenuMapping = new Map<string, string>([
   ['Set API Keys', setLLmApiKeys.name],
   ['Get Help', showHelpSidebar.name],
+  ['Clear Cache', clearSheetsAICache.name],
 ]);
+
+const CACHE_TTL_SECONDS = 21600; // 6 hours
 
 /**
  * Generates text using a large language model. Defaults to GPT-4o. Requires API key to be set in the `SheetsAI Menu > Set API Keys` menu.
@@ -21,16 +24,34 @@ export async function SHEETS_AI(
   query: string,
   context?: string
 ): Promise<string | void> {
+  // Create a cache key based on input parameters
+  const cacheKey = `SHEETS_AI_${hashString(query)}_${hashString(
+    context || ''
+  )}`;
+
+  // Get the cache
+  const cache = CacheService.getUserCache();
+  const cachedResult = cache.get(cacheKey);
+
+  // Return cached result if available
+  if (cachedResult) {
+    return cachedResult;
+  }
+
   const apiKey = new SecretService().getSecret('USER_OPENAI_KEY');
   if (!apiKey) {
-    const ui = SpreadsheetApp.getUi();
-    ui.alert(
-      'Your OpenAI key is not set! Please set it now in ' +
-        AppMenuName +
-        ' in the top nar (right of "Help")',
-      ui.ButtonSet.OK_CANCEL
-    );
-
+    try {
+      const ui = SpreadsheetApp.getUi();
+      ui.alert(
+        'Your OpenAI key is not set! Please set it now in ' +
+          AppMenuName +
+          ' in the top nar (right of "Help")',
+        ui.ButtonSet.OK_CANCEL
+      );
+    } catch (error) {
+      // Handle case when UI operations aren't allowed
+      return 'Error: OpenAI API key not set. Please set it via SheetsAI Menu.';
+    }
     return;
   }
   if (context) {
@@ -50,6 +71,10 @@ export async function SHEETS_AI(
       ],
     });
     usageService.storeUsage(completion.metadata, completion.usage);
+
+    // Cache the result for 6 hours
+    cache.put(cacheKey, completion.text, CACHE_TTL_SECONDS);
+
     return completion.text;
   } catch (error: Error | any) {
     console.error('Failed to make Open AI call: ' + error);
@@ -86,6 +111,17 @@ function onInstall() {
   } catch (e) {
     authorizeApp();
   }
+}
+
+/**
+ * Handles edit events from the sheet.
+ * This is called via the onEdit trigger set up in TriggerService.
+ */
+function fireOnEdit(e: GoogleAppsScript.Events.SheetsOnEdit) {
+  // We don't need to do anything on edit currently
+  // This is a placeholder for future edit-related functionality
+  // The mere existence of this function prevents errors related to the trigger
+  console.log('Edit detected: ' + JSON.stringify(e.range.getA1Notation()));
 }
 
 function authorizeApp() {
@@ -163,5 +199,24 @@ function getApiKeyInstructions(provider: LLMProviders) {
       return `https://trysheetsai.com/apikeys/openai`;
     default:
       throw new SheetsAIError('Invalid LLM Provider selected: ' + provider);
+  }
+}
+
+/**
+ * Clears the SHEETS_AI function cache to force fresh API calls.
+ * Useful when you want to get updated responses from the LLM.
+ */
+function clearSheetsAICache() {
+  try {
+    const cache = CacheService.getUserCache();
+    cache.removeAll([]);
+    const ui = SpreadsheetApp.getUi();
+    ui.alert(
+      'Cache Cleared',
+      'SheetsAI cache has been cleared. Your AI functions will now make fresh API calls.',
+      ui.ButtonSet.OK
+    );
+  } catch (error) {
+    console.error('Failed to clear cache: ' + error);
   }
 }
