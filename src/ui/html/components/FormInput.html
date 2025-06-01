@@ -1,0 +1,57 @@
+<div class="input-group">
+  <label for="<?= data.id ?>"><?= data.label ?></label>
+  <? if (data.hint) { ?>
+  <div class="hints">
+    <p class="description"><?= data.hint ?></p>
+  </div>
+  <? } ?>
+  <div class="input-wrapper">
+    <? if (data.type === 'select') { ?>
+    <select
+      id="<?= data.id ?>"
+      name="<?= data.id ?>"
+      aria-label="<?= data.label ?>"
+      <?
+      if
+      (data.required)
+      {
+      ?
+    >
+      required<? } ?>
+      >
+      <? for (let i = 0; i < data.options.length; i++) { ?>
+      <option
+        value="<?= data.options[i].value ?>"
+        <?
+        if
+        (data.options[i].selected)
+        {
+        ?
+      >
+        selected<? } ?>
+        >
+        <?= data.options[i].label ?>
+      </option>
+      <? } ?>
+    </select>
+    <? } else { ?>
+    <input
+      type="<?= data.type || 'text' ?>"
+      id="<?= data.id ?>"
+      name="<?= data.id ?>"
+      aria-label="<?= data.label ?>"
+      placeholder="<?= data.placeholder || '' ?>"
+      <?
+      if
+      (data.required)
+      {
+      ?
+    />required<? } ?>
+    <? if (data.value) { ?>value="<?= data.value ?>"<? } ?>
+    />
+    <? } ?>
+  </div>
+  <? if (data.description) { ?>
+  <p class="description"><?= data.description ?></p>
+  <? } ?>
+</div>

@@ -4,127 +4,102 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>API Key Form</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <?!= include('ui/html/components/Styles'); ?>
     <style>
-      body {
-        font-family: Arial, sans-serif;
-        background-color: #f0f0f0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        margin: 0;
-      }
       .hints {
-        margin-bottom: 5px;
-      }
-      .config-container {
-        background-color: #ffffff;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        width: 400px;
-      }
-      h2 {
-        margin-top: 0;
-        color: #333;
+        margin-bottom: 8px;
       }
       .input-group {
-        margin-bottom: 20px;
-      }
-      label {
-        display: block;
-        margin-bottom: 5px;
-        font-weight: bold;
-        color: #333;
+        margin-bottom: 24px;
       }
       .input-wrapper {
         display: flex;
         align-items: center;
-        background-color: #f5f5f5;
-        border: 1px solid #ddd;
-        border-radius: 4px;
+        background-color: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        overflow: hidden;
+        transition: all 0.2s ease;
+      }
+      .input-wrapper:focus-within {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
       }
       input[type='text'],
       select {
         flex-grow: 1;
         border: none;
-        padding: 10px;
+        padding: 12px 16px;
         background-color: transparent;
         font-size: 14px;
+        color: #111111;
+        outline: none;
+      }
+      select {
+        -webkit-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23111111' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        padding-right: 40px;
+      }
+      select option {
+        background-color: #ffffff;
+        color: #111111;
       }
       .toggle-visibility {
         background-color: transparent;
         border: none;
         padding: 10px;
         cursor: pointer;
-        color: #666;
-      }
-      .save-button {
-        background-color: #007bff;
-        color: white;
-        border: none;
-        padding: 10px 15px;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 14px;
-        transition: background-color 0.3s;
-        width: 100%;
-      }
-      .save-button:hover {
-        background-color: #0056b3;
-      }
-      .save-button:disabled {
-        background-color: #cccccc;
-        cursor: not-allowed;
-      }
-      .save-button.loading {
-        position: relative;
-        color: transparent;
-      }
-      .save-button.loading::after {
-        content: '';
-        position: absolute;
-        width: 16px;
-        height: 16px;
-        top: 50%;
-        left: 50%;
-        margin-top: -8px;
-        margin-left: -8px;
-        border-radius: 50%;
-        border: 2px solid #ffffff;
-        border-top-color: transparent;
-        animation: spin 1s linear infinite;
+        color: #6b7280;
       }
       .save-button.completed {
-        background-color: #28a745;
+        background-color: #10b981;
+        transform: translateY(0);
       }
       .save-button.completed::after {
         content: '✓';
-        color: white;
+        margin-left: 8px;
       }
-      @keyframes spin {
-        0% {
-          transform: rotate(0deg);
-        }
-        100% {
-          transform: rotate(360deg);
-        }
+      .api-key-info {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
       }
-      .description {
-        font-size: 12px;
-        color: #666;
-        margin-top: 5px;
+      #api-key-instructions-href a {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+      #api-key-instructions-href a::after {
+        content: '';
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6'/%3E%3Cpolyline points='15 3 21 3 21 9'/%3E%3Cline x1='10' y1='14' x2='21' y2='3'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
       }
     </style>
   </head>
   <body>
-    <div class="config-container">
-      <!-- <h2>Config</h2> -->
+    <div class="container">
+      <h2>LLM API Key Configuration</h2>
       <form id="apiForm">
         <div class="input-group">
           <label for="provider">Select Provider</label>
           <div class="input-wrapper">
-            <select id="provider" required>
+            <select
+              id="provider"
+              name="provider"
+              required
+              aria-label="Select Provider"
+            >
               <option value="openai" selected>OpenAI</option>
             </select>
           </div>
@@ -134,102 +109,120 @@
         <div class="input-group">
           <label for="api-key">API Key</label>
           <div class="hints">
-            <p class="description" id="current-api-key"></p>
-            <a
-              href="#"
-              target="_blank"
-              rel="noopener"
-              aria-label="API Key Instructions"
-              id="api-key-instructions-href"
-              class="description"
-            >
-            </a>
+            <div class="api-key-info">
+              <p class="description" id="current-api-key"></p>
+              <div id="api-key-instructions-href" class="description"></div>
+            </div>
           </div>
           <div class="input-wrapper">
             <input
               type="text"
               id="api-key"
+              name="api-key"
               required
               placeholder="Enter your API key (i.e., sk_test_...)"
+              aria-label="API Key"
             />
           </div>
           <p class="description">
             Your secret API key. Keep this safe and do not share it publicly.
           </p>
         </div>
-        <button type="submit" id="saveButton" class="save-button">Save</button>
+
+        <button type="submit" id="saveButton" class="primary-button">
+          Save
+        </button>
       </form>
     </div>
 
+    <?!= include('ui/html/components/Scripts'); ?>
     <script>
-      // Fetch and display the current OpenAI Key when the modal loads
-      function getCurrentApiKey(provider) {
-        google.script.run
-          .withSuccessHandler(function (data) {
-            const storedKey = data.key;
-            const instructionUrl = data.instructionUrl;
-            const elem = document.getElementById('current-api-key');
+      document.addEventListener('DOMContentLoaded', function () {
+        const providerElement = document.getElementById('provider');
+        const saveButton = document.getElementById('saveButton');
 
-            const instructionHrefElem = document.getElementById(
-              'api-key-instructions-href'
-            );
+        // Initial API key fetch
+        getCurrentApiKey(providerElement.value);
 
-            if (storedKey) {
-              elem.textContent = 'Current key is: ' + storedKey || null;
-            } else {
-              elem.textContent = 'No key is currently set for this provider.';
+        // Provider change event
+        providerElement.addEventListener('change', function (e) {
+          getCurrentApiKey(e.target.value);
+        });
+
+        // Form submission
+        document
+          .getElementById('apiForm')
+          .addEventListener('submit', function (e) {
+            e.preventDefault();
+            const provider = providerElement.value;
+            const apiKey = document.getElementById('api-key').value;
+
+            if (!provider || !apiKey) {
+              SheetsAI.showToast('Please fill in all fields', 'error');
+              return;
             }
-            if (instructionUrl) {
-              instructionHrefElem.innerHTML = `<a href="${instructionUrl}" target="_blank" rel="noopener">How to get an API Key</a>`;
-            } else {
-              instructionHrefElem.innerHTML = '';
-            }
-          })
-          .getStoredApiKey(provider);
-      }
-      function handleError(error, user) {
-        const button = document.getElementById('saveButton');
-        button.disabled = false;
-        button.classList.remove('loading');
-        button.textContent = 'Save';
 
-        console.error(error);
-      }
-      const providerElement = document.getElementById('provider');
-      getCurrentApiKey(providerElement.value);
+            SheetsAI.setButtonLoading(saveButton, true);
 
-      providerElement.addEventListener('change', function (e) {
-        getCurrentApiKey(e.currentTarget.value);
+            // Save the API key
+            const saveApiKeyFn = SheetsAI.callServer('saveApiKey', {
+              loadingElement: saveButton,
+              onSuccess: function (response) {
+                getCurrentApiKey(provider);
+                saveButton.classList.add('completed');
+                saveButton.textContent = 'Saved';
+                SheetsAI.showToast('API key saved successfully!');
+
+                // Close the modal after a short delay
+                setTimeout(function () {
+                  google.script.host.close();
+                }, 1500);
+              },
+              onFailure: function (error) {
+                SheetsAI.showToast('Failed to save API key: ' + error, 'error');
+              },
+            });
+
+            // Call the function with parameters
+            saveApiKeyFn(provider, apiKey);
+          });
       });
 
-      document
-        .getElementById('apiForm')
-        .addEventListener('submit', function (e) {
-          e.preventDefault();
-          const button = document.getElementById('saveButton');
-          const provider = document.getElementById('provider').value;
-          const apiKey = document.getElementById('api-key').value;
+      /**
+       * Gets the current API key for the selected provider
+       */
+      function getCurrentApiKey(provider) {
+        const getStoredApiKeyFn = SheetsAI.callServer('getStoredApiKey', {
+          onSuccess: function (data) {
+            const storedKey = data.key;
+            const instructionUrl = data.instructionUrl;
 
-          if (!provider || !apiKey) {
-            alert('Please fill in all fields');
-            return;
-          }
+            // Update the current key display
+            const keyElement = document.getElementById('current-api-key');
+            keyElement.textContent = storedKey
+              ? 'Current key is: ' + storedKey
+              : 'No key is currently set for this provider.';
 
-          button.disabled = true;
-          button.classList.add('loading');
-          button.textContent = 'Saving...';
-
-          google.script.run
-            .withSuccessHandler(function (response) {
-              getCurrentApiKey(provider);
-              button.classList.remove('loading');
-              button.classList.add('completed');
-              button.textContent = 'Saved';
-              // google.script.host.close(); // Close the modal after saving
-            })
-            .withFailureHandler(handleError)
-            .saveApiKey(provider, apiKey);
+            // Update the instructions link
+            const instructionsElement = document.getElementById(
+              'api-key-instructions-href'
+            );
+            if (instructionUrl) {
+              instructionsElement.innerHTML = `<a href="${instructionUrl}" target="_blank" rel="noopener">How to get an API Key</a>`;
+            } else {
+              instructionsElement.innerHTML = '';
+            }
+          },
+          onFailure: function (error) {
+            console.error('Failed to get API key:', error);
+            document.getElementById('current-api-key').textContent =
+              'Error loading API key information';
+          },
         });
+
+        // Call the function with parameters
+        getStoredApiKeyFn(provider);
+      }
     </script>
   </body>
 </html>
