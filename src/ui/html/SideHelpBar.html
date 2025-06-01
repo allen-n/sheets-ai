@@ -37,35 +37,35 @@
       <h2>SheetsAI Help</h2>
       
       <? var stepApiKey = { 
-        title: 'Get your API Key',
-        description: 'If you don\'t already have one, <a href="#" target="_blank" rel="noopener" id="openai-instructions">follow the instructions</a> to get an API key.'
+         title: 'Get your API Key',
+         description: 'If you don\'t already have one, <a href="#" target="_blank" rel="noopener" id="openai-instructions">follow the instructions</a> to get an API key.'
       }; ?>
       <?!= include('ui/html/components/Step', stepApiKey); ?>
       
       <? var stepSetKey = { 
-        title: 'Set your API Key',
-        description: 'Navigate to the settings and input your OpenAI API key securely (you can use the button below).',
-        content: '<div class="button-container"><button class="primary-button" onclick="google.script.run.setLLmApiKeys()">Set API Key</button></div>'
+         title: 'Set your API Key',
+         description: 'Navigate to the settings and input your OpenAI API key securely (you can use the button below).',
+         content: '<div class="button-container"><button class="primary-button" onclick="google.script.run.setLLmApiKeys()">Set API Key</button></div>'
       }; ?>
       <?!= include('ui/html/components/Step', stepSetKey); ?>
       
       <? var stepUseAddon = { 
-        title: 'Use the add-on!',
-        description: 'Copy/paste the below into the sheet to see SheetsAI in action. Define a prompt or provide context, and the AI will generate responses.'
+         title: 'Use the add-on!',
+         description: 'Copy/paste the below into the sheet to see SheetsAI in action. Define a prompt or provide context, and the AI will generate responses.'
       }; ?>
       <?!= include('ui/html/components/Step', stepUseAddon); ?>
       
       <? var snippet1 = {
-        id: '1',
-        code: '=SHEETS_AI("What is the capital of France?")',
-        caption: 'Ask a question with no context 👆'
+         id: '1',
+         code: '=SHEETS_AI("What is the capital of France?")',
+         caption: 'Ask a question with no context 👆'
       }; ?>
       <?!= include('ui/html/components/CodeSnippet', snippet1); ?>
       
       <? var snippet2 = {
-        id: '2',
-        code: '=SHEETS_AI("Translate the following text to French", A1)',
-        caption: 'Add context (make sure to put some text in cell A1, or change it to a cell with some text in it).'
+         id: '2',
+         code: '=SHEETS_AI("Translate the following text to French", A1)',
+         caption: 'Add context (make sure to put some text in cell A1, or change it to a cell with some text in it).'
       }; ?>
       <?!= include('ui/html/components/CodeSnippet', snippet2); ?>
     </div>

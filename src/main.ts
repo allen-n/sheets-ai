@@ -151,10 +151,19 @@ function authorizeApp() {
 
 /**
  * Handles template includes for HTML files.
- * Used as <?!= include('path/to/file'); ?> in HTML templates.
+ * Used as <?!= include('path/to/file', data); ?> in HTML templates.
+ * @param filename Path to the HTML template file
+ * @param data Data to pass to the template
+ * @returns HTML content
  */
-function include(filename: string): string {
-  return HtmlService.createHtmlOutputFromFile(filename).getContent();
+function include(filename: string, data?: any): string {
+  const template = HtmlService.createTemplateFromFile(filename);
+
+  if (data) {
+    template.data = data;
+  }
+
+  return template.evaluate().getContent();
 }
 
 function showHelpSidebar() {

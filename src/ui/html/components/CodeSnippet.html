@@ -1,10 +1,15 @@
-<div class="code-container" id="code-container-<?= id ?>">
-  <div class="copy-notification" id="copy-notification-<?= id ?>">
+<div class="code-container" id="code-container-<?= data.id ?>">
+  <div class="copy-notification" id="copy-notification-<?= data.id ?>">
     Copied to clipboard
   </div>
-  <code id="code-<?= id ?>"><?= code ?></code>
-  <button class="secondary-button" onclick="SheetsAI.copyToClipboard('code-<?= id ?>')">
+  <code id="code-<?= data.id ?>"><?!= data.code ?></code>
+  <button
+    class="secondary-button"
+    onclick="SheetsAI.copyToClipboard('code-<?= data.id ?>')"
+  >
     <span class="copy-icon">📋</span> Copy
   </button>
 </div>
-<?= caption ? '<p>' + caption + '</p>' : '' ?> 
+<? if (data.caption) { ?>
+<p><?= data.caption ?></p>
+<? } ?>

@@ -85,6 +85,17 @@ export class UIManager {
   }
 
   /**
+   * Shows the test template in a modal dialog
+   */
+  static showTestTemplate(): void {
+    const htmlOutput = this.createHtmlFromTemplate('ui/html/test.html', {
+      width: 600,
+      height: 500,
+    });
+    this.showModalDialog(htmlOutput, 'Template Test');
+  }
+
+  /**
    * Shows an alert message
    * @param title - The title of the alert
    * @param message - The message to display

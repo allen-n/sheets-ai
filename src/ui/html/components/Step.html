@@ -1,5 +1,7 @@
 <div class="step">
-  <div class="step-title"><?= title ?></div>
-  <div class="step-description"><?= description ?></div>
-  <?= content ? content : '' ?>
+  <div class="step-title"><?!= data.title ?></div>
+  <div class="step-description"><?!= data.description ?></div>
+  <? if (data.content) { ?>
+  <?!= data.content ?>
+  <? } ?>
 </div>
