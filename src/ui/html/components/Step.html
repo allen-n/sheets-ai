@@ -1,5 +1,8 @@
 <div class="step">
-  <div class="step-title"><?= data.title ?></div>
+  <div class="step-header">
+    <div class="step-number"><?= data.number || '•' ?></div>
+    <div class="step-title"><?= data.title ?></div>
+  </div>
   <div class="step-description"><?!= data.description ?></div>
   <? if (data.content) { ?>
   <?!= data.content ?>
