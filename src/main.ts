@@ -1,4 +1,4 @@
-import { hashString, SheetsAIError } from '@/common/utils';
+import { cyrb64Hash, SheetsAIError } from '@/common/utils';
 import { LLMProviders } from '@/llm/provider/base';
 import { OpenAIProvider } from '@/llm/provider/openai';
 import { SecretService } from '@/sheets/secrets';
@@ -12,6 +12,7 @@ const AppMenuMapping = new Map<string, string>([
 ]);
 
 const CACHE_TTL_SECONDS = 21600; // 6 hours
+const hash = cyrb64Hash;
 
 /**
  * Generates text using a large language model. Defaults to GPT-4o. Requires API key to be set in the `SheetsAI Menu > Set API Keys` menu.
@@ -25,14 +26,14 @@ export async function SHEETS_AI(
   context?: string
 ): Promise<string | void> {
   // Create a cache key based on input parameters
-  const cacheKey = `SHEETS_AI_${hashString(query)}_${hashString(
-    context || ''
-  )}`;
+  const cacheKey = `SHEETS_AI_${hash(query)}_${hash(context || '')}`;
 
   // Get the cache
   const cache = CacheService.getUserCache();
   const cachedResult = cache.get(cacheKey);
-
+  Logger.log('cacheKey: ' + cacheKey);
+  Logger.log('cachedResult: ' + cachedResult);
+  Logger.log('isCacheHit: ' + !!cachedResult);
   // Return cached result if available
   if (cachedResult) {
     return cachedResult;
@@ -50,7 +51,7 @@ export async function SHEETS_AI(
       );
     } catch (error) {
       // Handle case when UI operations aren't allowed
-      return 'Error: OpenAI API key not set. Please set it via SheetsAI Menu.';
+      return 'Error: SheetsAI API key not set. Please set it via SheetsAI Menu.';
     }
     return;
   }
