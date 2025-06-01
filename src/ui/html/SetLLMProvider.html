@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>API Key Form</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <?!= include('ui/html/components/Styles'); ?>
     <style>
       .hints {
@@ -15,15 +21,15 @@
       .input-wrapper {
         display: flex;
         align-items: center;
-        background-color: rgba(255, 255, 255, 0.06);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 10px;
+        background-color: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
         overflow: hidden;
         transition: all 0.2s ease;
       }
       .input-wrapper:focus-within {
-        border-color: rgba(94, 158, 255, 0.5);
-        box-shadow: 0 0 0 2px rgba(94, 158, 255, 0.2);
+        border-color: #2563eb;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
       }
       input[type='text'],
       select {
@@ -32,29 +38,29 @@
         padding: 12px 16px;
         background-color: transparent;
         font-size: 14px;
-        color: #ffffff;
+        color: #111111;
         outline: none;
       }
       select {
         -webkit-appearance: none;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23111111' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
         background-repeat: no-repeat;
         background-position: right 12px center;
         padding-right: 40px;
       }
       select option {
-        background-color: #2a2a2a;
-        color: #ffffff;
+        background-color: #ffffff;
+        color: #111111;
       }
       .toggle-visibility {
         background-color: transparent;
         border: none;
         padding: 10px;
         cursor: pointer;
-        color: #a0a0a0;
+        color: #6b7280;
       }
       .save-button.completed {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        background-color: #10b981;
         transform: translateY(0);
       }
       .save-button.completed::after {
@@ -76,7 +82,7 @@
         display: inline-block;
         width: 14px;
         height: 14px;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%235e9eff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6'/%3E%3Cpolyline points='15 3 21 3 21 9'/%3E%3Cline x1='10' y1='14' x2='21' y2='3'/%3E%3C/svg%3E");
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6'/%3E%3Cpolyline points='15 3 21 3 21 9'/%3E%3Cline x1='10' y1='14' x2='21' y2='3'/%3E%3C/svg%3E");
         background-repeat: no-repeat;
       }
     </style>

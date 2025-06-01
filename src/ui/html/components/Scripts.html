@@ -17,14 +17,37 @@
       document.body.appendChild(container);
     }
 
-    // Create toast element
+    // Create toast element using our Toast component structure
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
 
-    // Add message and close button
+    // Use the correct icon based on type
+    let iconSvg = '';
+    if (type === 'error') {
+      iconSvg =
+        '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line>';
+    } else if (type === 'success') {
+      iconSvg =
+        '<circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path>';
+    } else {
+      iconSvg =
+        '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line>';
+    }
+
+    // Add message with icon and close button
     toast.innerHTML = `
-      ${message}
-      <button class="toast-close" onclick="this.parentNode.remove()">&times;</button>
+      <div class="toast-content">
+        <svg class="toast-icon lucide" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          ${iconSvg}
+        </svg>
+        <span>${message}</span>
+      </div>
+      <button class="toast-close" onclick="this.parentNode.remove()" aria-label="Close notification">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x">
+          <path d="M18 6 6 18"></path>
+          <path d="m6 6 12 12"></path>
+        </svg>
+      </button>
     `;
 
     // Add to container
@@ -114,8 +137,26 @@
   };
 
   /**
-   * Copies code text to clipboard
+   * Copies code text to clipboard and shows a toast notification
    * @param {string} codeId - The ID of the code element
+   */
+  SheetsAI.copyToClipboardAndToast = function (codeId) {
+    const codeText = document.getElementById(codeId).innerText.trim();
+    navigator.clipboard
+      .writeText(codeText)
+      .then(() => {
+        SheetsAI.showToast('Copied to clipboard', 'success');
+      })
+      .catch((err) => {
+        console.error('Failed to copy: ', err);
+        SheetsAI.showToast('Failed to copy to clipboard', 'error');
+      });
+  };
+
+  /**
+   * Copies code text to clipboard with in-place notification
+   * @param {string} codeId - The ID of the code element
+   * @deprecated - Use copyToClipboardAndToast instead
    */
   SheetsAI.copyToClipboard = function (codeId) {
     const codeText = document.getElementById(codeId).innerText.trim();

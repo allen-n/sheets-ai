@@ -4,38 +4,25 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SheetsAI Help</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <?!= include('ui/html/components/Styles'); ?>
     <style>
       .code-container {
-        background-color: rgba(0, 0, 0, 0.2);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 10px;
-        padding: 16px;
-        font-family: 'SF Mono', Consolas, Monaco, 'Courier New', monospace;
+        background-color: #f5f7fa;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 14px;
+        font-family: 'JetBrains Mono', 'SF Mono', Consolas, Monaco, 'Courier New', monospace;
         white-space: pre-wrap;
         overflow-x: auto;
-        margin-top: 12px;
-        margin-bottom: 20px;
-        display: flex;
-        flex-direction: column;
+        margin: 12px 0 16px;
         position: relative;
       }
       
-      .code-container::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 30px;
-        background: linear-gradient(180deg, rgba(30, 30, 30, 0.4) 0%, rgba(30, 30, 30, 0) 100%);
-        border-radius: 10px 10px 0 0;
-        pointer-events: none;
-      }
-      
       code {
-        margin-bottom: 10px;
-        color: #e0e0e0;
+        color: #111111;
         display: block;
         white-space: pre-wrap;
         font-size: 13px;
@@ -44,16 +31,9 @@
       
       .code-caption {
         font-size: 12px;
-        color: #a0a0a0;
+        color: #6b7280;
         text-align: center;
         margin-top: 8px;
-      }
-      
-      .copy-notification {
-        margin-bottom: 10px;
-        color: #10b981;
-        font-size: 12px;
-        display: none;
       }
       
       .help-header {
@@ -75,7 +55,7 @@
         left: 0;
         width: 40px;
         height: 3px;
-        background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+        background-color: #111111;
         border-radius: 3px;
       }
     </style>
