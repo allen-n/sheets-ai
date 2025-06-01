@@ -3,6 +3,7 @@ import { LLMProviders } from '@/llm/provider/base';
 import { OpenAIProvider } from '@/llm/provider/openai';
 import { SecretService } from '@/sheets/secrets';
 import { LLMUsageService } from '@/sheets/storage/llm-usage';
+import { UIManager } from '@/ui/UIManager';
 
 const AppMenuName = 'SheetsAI Menu';
 const AppMenuMapping = new Map<string, string>([
@@ -42,12 +43,12 @@ export async function SHEETS_AI(
   const apiKey = new SecretService().getSecret('USER_OPENAI_KEY');
   if (!apiKey) {
     try {
-      const ui = SpreadsheetApp.getUi();
-      ui.alert(
+      UIManager.showAlert(
+        'API Key Required',
         'Your OpenAI key is not set! Please set it now in ' +
           AppMenuName +
-          ' in the top nar (right of "Help")',
-        ui.ButtonSet.OK_CANCEL
+          ' in the top menu (right of "Help")',
+        SpreadsheetApp.getUi().ButtonSet.OK_CANCEL
       );
     } catch (error) {
       // Handle case when UI operations aren't allowed
@@ -102,8 +103,8 @@ function onOpen() {
 function onInstall() {
   // TODO @allen-n: Consider doing other onboarding tasks here
   onOpen();
-  const ui = SpreadsheetApp.getUi();
-  ui.alert(
+  UIManager.showAlert(
+    'Installation Complete',
     `SheetsAI has been installed! You can now access the SheetsAI menu in the top navigation bar for help, under 'Extensions > ${AppMenuName}'.`
   );
   showHelpSidebar();
@@ -126,40 +127,43 @@ function fireOnEdit(e: GoogleAppsScript.Events.SheetsOnEdit) {
 }
 
 function authorizeApp() {
-  const ui = SpreadsheetApp.getUi();
-  const response = ui.alert(
+  const response = UIManager.showAlert(
     'Authorization',
     'Please authorize the app to use the necessary permissions.',
-    ui.ButtonSet.OK_CANCEL
+    SpreadsheetApp.getUi().ButtonSet.OK_CANCEL
   );
 
-  if (response == ui.Button.OK) {
+  if (response == SpreadsheetApp.getUi().Button.OK) {
     try {
       PropertiesService.getUserProperties();
-      ui.alert('Authorization successful!');
+      UIManager.showAlert(
+        'Authorization Successful',
+        'Authorization successful!'
+      );
     } catch (e) {
-      ui.alert('Authorization failed. Please try again. Error: ' + e);
+      UIManager.showAlert(
+        'Authorization Failed',
+        'Authorization failed. Please try again. Error: ' + e
+      );
     }
   }
 }
 
+/**
+ * Handles template includes for HTML files.
+ * Used as <?!= include('path/to/file'); ?> in HTML templates.
+ */
+function include(filename: string): string {
+  return HtmlService.createHtmlOutputFromFile(filename).getContent();
+}
+
 function showHelpSidebar() {
-  const htmlOutput = HtmlService.createHtmlOutputFromFile(
-    'ui/html/SideHelpBar.html'
-  )
-    .setTitle('SheetsAI Help')
-    .setWidth(300);
-  SpreadsheetApp.getUi().showSidebar(htmlOutput);
+  UIManager.showHelpSidebar();
 }
 
 // Function to open the Set Secrets modal
 function setLLmApiKeys() {
-  const html = HtmlService.createHtmlOutputFromFile(
-    'ui/html/SetLLMProvider.html'
-  )
-    .setWidth(600)
-    .setHeight(400);
-  SpreadsheetApp.getUi().showModalDialog(html, 'Set you LLM API Key(s)');
+  UIManager.showSetLLMApiKeysModal();
 }
 
 function listLLMProviders(): Map<LLMProviders, string> {
@@ -211,11 +215,9 @@ function clearSheetsAICache() {
   try {
     const cache = CacheService.getUserCache();
     cache.removeAll([]);
-    const ui = SpreadsheetApp.getUi();
-    ui.alert(
+    UIManager.showAlert(
       'Cache Cleared',
-      'SheetsAI cache has been cleared. Your AI functions will now make fresh API calls.',
-      ui.ButtonSet.OK
+      'SheetsAI cache has been cleared. Your AI functions will now make fresh API calls.'
     );
   } catch (error) {
     console.error('Failed to clear cache: ' + error);

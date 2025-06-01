@@ -1,0 +1,10 @@
+<div class="code-container" id="code-container-<?= id ?>">
+  <div class="copy-notification" id="copy-notification-<?= id ?>">
+    Copied to clipboard
+  </div>
+  <code id="code-<?= id ?>"><?= code ?></code>
+  <button class="secondary-button" onclick="SheetsAI.copyToClipboard('code-<?= id ?>')">
+    <span class="copy-icon">📋</span> Copy
+  </button>
+</div>
+<?= caption ? '<p>' + caption + '</p>' : '' ?> 

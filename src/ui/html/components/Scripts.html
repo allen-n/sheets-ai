@@ -1,0 +1,126 @@
+<script>
+  // Initialize the SheetsAI namespace
+  window.SheetsAI = window.SheetsAI || {};
+
+  /**
+   * Shows a toast notification
+   * @param {string} message - The message to display
+   * @param {string} type - The type of toast (success, error, info)
+   * @param {number} duration - Duration in milliseconds
+   */
+  SheetsAI.showToast = function (message, type = 'success', duration = 3000) {
+    // Create toast container if it doesn't exist
+    let container = document.querySelector('.toast-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.className = 'toast-container';
+      document.body.appendChild(container);
+    }
+
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+
+    // Add to container
+    container.appendChild(toast);
+
+    // Remove after duration
+    setTimeout(() => {
+      toast.addEventListener('animationend', () => {
+        toast.remove();
+      });
+      toast.classList.add('fade-out');
+    }, duration);
+  };
+
+  /**
+   * Handles loading state for buttons
+   * @param {HTMLElement} button - The button element
+   * @param {boolean} isLoading - Whether the button is in loading state
+   * @param {string} originalText - The original button text
+   */
+  SheetsAI.setButtonLoading = function (button, isLoading, originalText) {
+    if (isLoading) {
+      button.disabled = true;
+      button.classList.add('loading');
+      button.setAttribute('data-original-text', button.textContent);
+      button.textContent = '';
+    } else {
+      button.disabled = false;
+      button.classList.remove('loading');
+      button.textContent =
+        originalText || button.getAttribute('data-original-text') || 'Button';
+    }
+  };
+
+  /**
+   * Wrapper for google.script.run to handle errors and loading states consistently
+   * @param {Function} serverFunc - The server function to call
+   * @param {Object} options - Options for the call
+   * @returns {Object} - The wrapped google.script.run object
+   */
+  SheetsAI.callServer = function (serverFunc, options = {}) {
+    const { loadingElement, onSuccess, onFailure } = options;
+
+    if (loadingElement) {
+      SheetsAI.setButtonLoading(loadingElement, true);
+    }
+
+    return google.script.run
+      .withSuccessHandler(function (result) {
+        if (loadingElement) {
+          SheetsAI.setButtonLoading(loadingElement, false);
+        }
+        if (typeof onSuccess === 'function') {
+          onSuccess(result);
+        }
+      })
+      .withFailureHandler(function (error) {
+        if (loadingElement) {
+          SheetsAI.setButtonLoading(loadingElement, false);
+        }
+        console.error('Error calling server function:', error);
+        SheetsAI.showToast('An error occurred: ' + error.message, 'error');
+        if (typeof onFailure === 'function') {
+          onFailure(error);
+        }
+      });
+  };
+
+  /**
+   * Copies code text to clipboard
+   * @param {string} codeId - The ID of the code element
+   */
+  SheetsAI.copyToClipboard = function (codeId) {
+    const codeText = document.getElementById(codeId).innerText.trim();
+    navigator.clipboard
+      .writeText(codeText)
+      .then(() => {
+        const notificationId = 'copy-notification-' + codeId.split('-').pop();
+        const notification = document.getElementById(notificationId);
+        if (notification) {
+          notification.style.display = 'block';
+          setTimeout(() => {
+            notification.style.display = 'none';
+          }, 3000); // Auto-hide after 3 seconds
+        } else {
+          SheetsAI.showToast('Copied to clipboard', 'success');
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to copy: ', err);
+        SheetsAI.showToast('Failed to copy to clipboard', 'error');
+      });
+  };
+
+  /**
+   * Initialize UI components when DOM is ready
+   */
+  document.addEventListener('DOMContentLoaded', function () {
+    // Add toast container
+    const toastContainer = document.createElement('div');
+    toastContainer.className = 'toast-container';
+    document.body.appendChild(toastContainer);
+  });
+</script>
