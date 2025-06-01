@@ -72,16 +72,23 @@
     
     <?!= include('ui/html/components/Scripts'); ?>
     <script>
-      // Get the API key instructions URL
-      google.script.run
-        .withSuccessHandler(function (data) {
-          const a = document.getElementById('openai-instructions');
-          a.setAttribute('href', data);
-        })
-        .withFailureHandler(function(error) {
-          console.error('Failed to get API key instructions:', error);
-        })
-        .getApiKeyInstructions('openai');
+      document.addEventListener('DOMContentLoaded', function() {
+        // Get the API key instructions URL
+        const getInstructionsUrl = SheetsAI.callServer('getApiKeyInstructions', {
+          onSuccess: function(data) {
+            const a = document.getElementById('openai-instructions');
+            if (a) {
+              a.setAttribute('href', data);
+            }
+          },
+          onFailure: function(error) {
+            console.error('Failed to get API key instructions:', error);
+          }
+        });
+        
+        // Call the function with parameter
+        getInstructionsUrl('openai');
+      });
     </script>
   </body>
 </html>

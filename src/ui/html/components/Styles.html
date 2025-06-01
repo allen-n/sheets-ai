@@ -163,11 +163,27 @@
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     display: flex;
     align-items: center;
+    justify-content: space-between;
     min-width: 200px;
     max-width: 300px;
     animation: fadeIn 0.3s, fadeOut 0.3s 2.7s;
     opacity: 0;
     animation-fill-mode: forwards;
+  }
+
+  .toast-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 0 0 0 10px;
+    margin-left: 10px;
+    opacity: 0.8;
+  }
+
+  .toast-close:hover {
+    opacity: 1;
   }
 
   .toast.success {

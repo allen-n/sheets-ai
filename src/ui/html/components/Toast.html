@@ -1,0 +1,8 @@
+<div class="toast <?= data.type || 'info' ?>">
+  <?= data.message ?>
+  <? if (data.dismissible) { ?>
+  <button class="toast-close" onclick="this.parentNode.remove()">
+    &times;
+  </button>
+  <? } ?>
+</div>

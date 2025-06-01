@@ -50,7 +50,12 @@
         <div class="input-group">
           <label for="provider">Select Provider</label>
           <div class="input-wrapper">
-            <select id="provider" required>
+            <select
+              id="provider"
+              name="provider"
+              required
+              aria-label="Select Provider"
+            >
               <option value="openai" selected>OpenAI</option>
             </select>
           </div>
@@ -67,14 +72,17 @@
             <input
               type="text"
               id="api-key"
+              name="api-key"
               required
               placeholder="Enter your API key (i.e., sk_test_...)"
+              aria-label="API Key"
             />
           </div>
           <p class="description">
             Your secret API key. Keep this safe and do not share it publicly.
           </p>
         </div>
+
         <button type="submit" id="saveButton" class="primary-button">
           Save
         </button>
@@ -111,7 +119,7 @@
             SheetsAI.setButtonLoading(saveButton, true);
 
             // Save the API key
-            SheetsAI.callServer(saveApiKey, {
+            const saveApiKeyFn = SheetsAI.callServer('saveApiKey', {
               loadingElement: saveButton,
               onSuccess: function (response) {
                 getCurrentApiKey(provider);
@@ -124,7 +132,13 @@
                   google.script.host.close();
                 }, 1500);
               },
-            })[(provider, apiKey)];
+              onFailure: function (error) {
+                SheetsAI.showToast('Failed to save API key: ' + error, 'error');
+              },
+            });
+
+            // Call the function with parameters
+            saveApiKeyFn(provider, apiKey);
           });
       });
 
@@ -132,7 +146,7 @@
        * Gets the current API key for the selected provider
        */
       function getCurrentApiKey(provider) {
-        SheetsAI.callServer(getStoredApiKey, {
+        const getStoredApiKeyFn = SheetsAI.callServer('getStoredApiKey', {
           onSuccess: function (data) {
             const storedKey = data.key;
             const instructionUrl = data.instructionUrl;
@@ -153,7 +167,15 @@
               instructionsElement.innerHTML = '';
             }
           },
-        })[provider];
+          onFailure: function (error) {
+            console.error('Failed to get API key:', error);
+            document.getElementById('current-api-key').textContent =
+              'Error loading API key information';
+          },
+        });
+
+        // Call the function with parameters
+        getStoredApiKeyFn(provider);
       }
     </script>
   </body>

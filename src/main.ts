@@ -156,7 +156,7 @@ function authorizeApp() {
  * @param data Data to pass to the template
  * @returns HTML content
  */
-function include(filename: string, data?: any): string {
+export function include(filename: string, data?: any): string {
   const template = HtmlService.createTemplateFromFile(filename);
 
   if (data) {
@@ -175,11 +175,12 @@ function setLLmApiKeys() {
   UIManager.showSetLLMApiKeysModal();
 }
 
-function listLLMProviders(): Map<LLMProviders, string> {
+export function listLLMProviders(): Map<LLMProviders, string> {
   return new Map<LLMProviders, string>([['openai', 'OpenAI']]);
 }
+
 // Function to get the stored OpenAI API key (shows only the first 8 characters)
-function getStoredApiKey(provider: LLMProviders): {
+export function getStoredApiKey(provider: LLMProviders): {
   key: string;
   instructionUrl: string;
 } {
@@ -196,7 +197,7 @@ function getStoredApiKey(provider: LLMProviders): {
 }
 
 // Function to set the OpenAI API key
-function saveApiKey(provider: LLMProviders, key: string) {
+export function saveApiKey(provider: LLMProviders, key: string) {
   switch (provider) {
     case 'openai':
       const secretService = new SecretService();
@@ -207,7 +208,7 @@ function saveApiKey(provider: LLMProviders, key: string) {
   }
 }
 
-function getApiKeyInstructions(provider: LLMProviders) {
+export function getApiKeyInstructions(provider: LLMProviders) {
   switch (provider) {
     case 'openai':
       return `https://trysheetsai.com/apikeys/openai`;
@@ -220,7 +221,7 @@ function getApiKeyInstructions(provider: LLMProviders) {
  * Clears the SHEETS_AI function cache to force fresh API calls.
  * Useful when you want to get updated responses from the LLM.
  */
-function clearSheetsAICache() {
+export function clearSheetsAICache() {
   try {
     const cache = CacheService.getUserCache();
     cache.removeAll([]);

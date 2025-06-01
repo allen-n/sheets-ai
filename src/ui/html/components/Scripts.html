@@ -20,17 +20,26 @@
     // Create toast element
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-    toast.textContent = message;
+
+    // Add message and close button
+    toast.innerHTML = `
+      ${message}
+      <button class="toast-close" onclick="this.parentNode.remove()">&times;</button>
+    `;
 
     // Add to container
     container.appendChild(toast);
 
     // Remove after duration
     setTimeout(() => {
-      toast.addEventListener('animationend', () => {
-        toast.remove();
-      });
-      toast.classList.add('fade-out');
+      if (toast.parentNode) {
+        toast.classList.add('fade-out');
+        toast.addEventListener('animationend', () => {
+          if (toast.parentNode) {
+            toast.remove();
+          }
+        });
+      }
     }, duration);
   };
 
@@ -56,36 +65,52 @@
 
   /**
    * Wrapper for google.script.run to handle errors and loading states consistently
-   * @param {Function} serverFunc - The server function to call
+   * @param {string} functionName - The server function name to call
    * @param {Object} options - Options for the call
-   * @returns {Object} - The wrapped google.script.run object
+   * @returns {Object} - The function to call with arguments
    */
-  SheetsAI.callServer = function (serverFunc, options = {}) {
+  SheetsAI.callServer = function (functionName, options = {}) {
     const { loadingElement, onSuccess, onFailure } = options;
 
     if (loadingElement) {
       SheetsAI.setButtonLoading(loadingElement, true);
     }
 
-    return google.script.run
-      .withSuccessHandler(function (result) {
+    let runner = google.script.run;
+
+    if (typeof onSuccess === 'function') {
+      runner = runner.withSuccessHandler(function (result) {
         if (loadingElement) {
           SheetsAI.setButtonLoading(loadingElement, false);
         }
-        if (typeof onSuccess === 'function') {
-          onSuccess(result);
-        }
-      })
-      .withFailureHandler(function (error) {
+        onSuccess(result);
+      });
+    }
+
+    if (typeof onFailure === 'function') {
+      runner = runner.withFailureHandler(function (error) {
         if (loadingElement) {
           SheetsAI.setButtonLoading(loadingElement, false);
         }
         console.error('Error calling server function:', error);
-        SheetsAI.showToast('An error occurred: ' + error.message, 'error');
-        if (typeof onFailure === 'function') {
-          onFailure(error);
-        }
+        SheetsAI.showToast('An error occurred', 'error');
+        onFailure(error);
       });
+    } else {
+      runner = runner.withFailureHandler(function (error) {
+        if (loadingElement) {
+          SheetsAI.setButtonLoading(loadingElement, false);
+        }
+        console.error('Error calling server function:', error);
+        SheetsAI.showToast('An error occurred', 'error');
+      });
+    }
+
+    // Return a function that takes arguments and calls the server function
+    return function () {
+      const args = Array.from(arguments);
+      return runner[functionName].apply(runner, args);
+    };
   };
 
   /**
