@@ -115,6 +115,13 @@ function onOpen() {
 
 function onInstall() {
   // TODO @allen-n: Consider doing other onboarding tasks here
+  try {
+    // Track addon opened event
+    const analytics = PostHogAnalytics.getInstance();
+    analytics.track(acMain.EVENTS.ADDON_INSTALLED);
+  } catch (e) {
+    console.log('Install logging error:', e);
+  }
   onOpen();
   UIManager.showAlert(
     'Installation Complete',

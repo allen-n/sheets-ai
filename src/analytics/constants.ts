@@ -6,6 +6,7 @@ class AnalyticsConstants {
   // Event names
   EVENTS = {
     ADDON_OPENED: 'addon_opened',
+    ADDON_INSTALLED: 'addon_installed',
     SIDEBAR_OPENED: 'sidebar_opened',
     MENU_ACTION: 'menu_action',
     API_KEY_SET: 'api_key_set',
