@@ -13,9 +13,6 @@ export class PostHogAnalytics {
   private readonly userProps = PropertiesService.getUserProperties();
   private readonly scriptProps = PropertiesService.getScriptProperties();
   private readonly queue = AnalyticsQueue.getInstance();
-  private readonly cache = CacheService.getUserCache();
-  private readonly FLUSH_LOCK_KEY = 'analytics_flush_lock';
-  private readonly FLUSH_LOCK_EXPIRY = 60; // 60 seconds
 
   /**
    * Get the singleton instance of PostHogAnalytics
@@ -54,43 +51,11 @@ export class PostHogAnalytics {
         timestamp: new Date().toISOString(),
       };
 
+      // TODO @allen-n: Consider adding trigger based flushing, or something similar
       this.queue.addEvent(event);
-
-      // If queue has reached threshold, trigger an immediate flush
-      if (this.queue.getQueueLength() >= acPH.QUEUE_CONFIG.MAX_BATCH_SIZE) {
-        this.flushQueue();
-      } else {
-        // Otherwise, schedule a delayed flush if one isn't already scheduled
-        this.scheduleDelayedFlush();
-      }
+      this.flushQueue();
     } catch (error) {
       console.error('Error tracking event:', error);
-    }
-  }
-
-  /**
-   * Schedule a delayed flush using cache as a lock mechanism
-   * This prevents multiple flush operations and eliminates the need for triggers
-   */
-  private scheduleDelayedFlush(): void {
-    try {
-      // Try to acquire the flush lock
-      const currentLock = this.cache.get(this.FLUSH_LOCK_KEY);
-
-      // If no lock exists, create one and schedule the flush
-      if (!currentLock) {
-        // Set lock with expiration
-        this.cache.put(this.FLUSH_LOCK_KEY, 'locked', this.FLUSH_LOCK_EXPIRY);
-
-        // Use time-driven trigger with immediate execution
-        // This will run once and then remove itself
-        Utils.delayMs(20000);
-        this.flushQueue();
-      }
-
-      // If lock exists, another flush is already scheduled, so just add event to queue and do nothing
-    } catch (error) {
-      console.error('Failed to schedule analytics flush:', error);
     }
   }
 
@@ -101,7 +66,6 @@ export class PostHogAnalytics {
     try {
       const events = this.queue.getEvents();
       // We have already loaded events into memory, so we can remove the lock
-      this.cache.remove(this.FLUSH_LOCK_KEY);
       if (events.length === 0) {
         return;
       }
