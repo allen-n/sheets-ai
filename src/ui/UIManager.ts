@@ -1,3 +1,5 @@
+import { createSettingsCard } from './settingsCard';
+
 /**
  * UIManager class for handling all UI-related functionality
  */
@@ -68,6 +70,14 @@ export class UIManager {
       width: 300,
     });
     this.showSidebar(htmlOutput);
+  }
+
+  /**
+   * Shows a settings card in the sidebar
+   */
+  static showSettingsCard(): void {
+    const card = createSettingsCard();
+    CardService.newNavigation().pushCard(card);
   }
 
   /**

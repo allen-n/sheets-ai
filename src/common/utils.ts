@@ -42,3 +42,7 @@ export const cyrb64Hash = (str: string, seed = 0) => {
   const [h2, h1] = cyrb64(str, seed);
   return h2.toString(36).padStart(7, '0') + h1.toString(36).padStart(7, '0');
 };
+
+export const getLogoUrl = () => {
+  return 'https://drive.usercontent.google.com/download?id=1G8MTjmb8bzhUQrZAasP88pYWgWN_ygk1';
+};

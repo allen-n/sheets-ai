@@ -1,14 +1,21 @@
+import { getEvents } from '@/analytics/constants';
+import { PostHogAnalytics } from '@/analytics/posthog';
 import { cyrb64Hash, SheetsAIError } from '@/common/utils';
 import { LLMProviders } from '@/llm/provider/base';
 import { OpenAIProvider } from '@/llm/provider/openai';
 import { SecretService } from '@/sheets/secrets';
 import { LLMUsageService } from '@/sheets/storage/llm-usage';
+import { handleAnalyticsToggle, resetAllSettings } from '@/ui/settingsCard';
 import { UIManager } from '@/ui/UIManager';
+
+// Local definition of events for analytics tracking
+const EVENTS = getEvents;
 
 const AppMenuName = 'SheetsAI Menu';
 const AppMenuMapping = new Map<string, string>([
   ['Set API Keys', setLLmApiKeys.name],
   ['Get Help', showHelpSidebar.name],
+  ['Settings', showSettings.name],
   ['Clear Cache', clearSheetsAICache.name],
 ]);
 
@@ -26,15 +33,16 @@ export async function SHEETS_AI(
   query: string,
   context?: string
 ): Promise<string | void> {
+  // Track function call (without the query content)
+  const analytics = PostHogAnalytics.getInstance();
+  analytics.track(EVENTS().FUNCTION_CALL, { hasContext: !!context });
+
   // Create a cache key based on input parameters
   const cacheKey = `SHEETS_AI_${hash(query)}_${hash(context || '')}`;
 
   // Get the cache
   const cache = CacheService.getUserCache();
   const cachedResult = cache.get(cacheKey);
-  Logger.log('cacheKey: ' + cacheKey);
-  Logger.log('cachedResult: ' + cachedResult);
-  Logger.log('isCacheHit: ' + !!cachedResult);
   // Return cached result if available
   if (cachedResult) {
     return cachedResult;
@@ -98,6 +106,10 @@ function onOpen() {
     menu.addItem(key, value);
   });
   menu.addToUi();
+
+  // Track addon opened event
+  const analytics = PostHogAnalytics.getInstance();
+  analytics.track(EVENTS().ADDON_OPENED);
 }
 
 function onInstall() {
@@ -110,13 +122,17 @@ function onInstall() {
   showHelpSidebar();
   try {
     PropertiesService.getUserProperties();
+
+    // Set up analytics triggers on installation
+    const analytics = PostHogAnalytics.getInstance();
+    analytics.ensureTriggers();
   } catch (e) {
     authorizeApp();
   }
 }
 
 /**
- * Handles edit events from the sheet.
+ * Handles edit ANALYTICS_EVENTS from the sheet.
  * This is called via the onEdit trigger set up in TriggerService.
  */
 function fireOnEdit(e: GoogleAppsScript.Events.SheetsOnEdit) {
@@ -168,6 +184,10 @@ export function include(filename: string, data?: any): string {
 
 function showHelpSidebar() {
   UIManager.showHelpSidebar();
+
+  // Track sidebar opened event
+  const analytics = PostHogAnalytics.getInstance();
+  analytics.track(EVENTS().SIDEBAR_OPENED);
 }
 
 // Function to open the Set Secrets modal
@@ -202,6 +222,11 @@ export function saveApiKey(provider: LLMProviders, key: string) {
     case 'openai':
       const secretService = new SecretService();
       secretService.setSecret('USER_OPENAI_KEY', key);
+
+      // Track API key set event (without the key itself)
+      const analytics = PostHogAnalytics.getInstance();
+      analytics.track(EVENTS().API_KEY_SET, { provider });
+
       return `OpenAI API Key saved successfully!`;
     default:
       throw new SheetsAIError('Invalid LLM Provider selected: ' + provider);
@@ -232,4 +257,28 @@ export function clearSheetsAICache() {
   } catch (error) {
     console.error('Failed to clear cache: ' + error);
   }
+}
+
+/**
+ * Time-based trigger handler for flushing analytics queue
+ * This is called automatically by the time-based trigger
+ */
+function SheetsAI_AnalyticsFlush() {
+  try {
+    const analytics = PostHogAnalytics.getInstance();
+    analytics.flushQueue();
+  } catch (error) {
+    console.error('Error in analytics flush:', error);
+  }
+}
+
+// Export the analytics-related functions for CardService
+export { handleAnalyticsToggle, resetAllSettings };
+
+function showSettings() {
+  UIManager.showSettingsCard();
+
+  // Track settings opened event
+  const analytics = PostHogAnalytics.getInstance();
+  analytics.track(EVENTS().MENU_ACTION, { action: 'open_settings' });
 }
