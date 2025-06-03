@@ -1,23 +1,18 @@
-import { AnalyticsConstants } from '@/analytics/constants';
 import { AnalyticsEvent, AnalyticsQueue } from './queue';
-import { ApiService } from '@/api/base';
+import { AnalyticsConstants } from './constants';
 
+// Create constants instance
 const acPH = new AnalyticsConstants();
+
 /**
  * Main PostHog analytics implementation for SheetsAI
  */
 export class PostHogAnalytics {
   private static instance: PostHogAnalytics;
-  private readonly apiService: ApiService;
   private readonly userProps = PropertiesService.getUserProperties();
   private readonly scriptProps = PropertiesService.getScriptProperties();
   private readonly queue = AnalyticsQueue.getInstance();
 
-  private constructor() {
-    this.apiService = new ApiService(acPH.POSTHOG_API.BASE_URL, {
-      'Content-Type': 'application/json',
-    });
-  }
   /**
    * Get the singleton instance of PostHogAnalytics
    */
@@ -58,10 +53,7 @@ export class PostHogAnalytics {
       this.queue.addEvent(event);
 
       // If queue has reached threshold, trigger a flush
-      if (
-        this.queue.getQueueLength() >= acPH.QUEUE_CONFIG.MAX_BATCH_SIZE ||
-        true
-      ) {
+      if (this.queue.getQueueLength() >= acPH.QUEUE_CONFIG.MAX_BATCH_SIZE) {
         this.flushQueue();
       }
     } catch (error) {

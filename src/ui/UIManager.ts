@@ -1,4 +1,4 @@
-import { createSettingsCard } from './settingsCard';
+import { SettingsCard } from './settingsCard';
 
 /**
  * UIManager class for handling all UI-related functionality
@@ -76,7 +76,8 @@ export class UIManager {
    * Shows a settings card in the sidebar
    */
   static showSettingsCard(): void {
-    const card = createSettingsCard();
+    const settingsCard = new SettingsCard();
+    const card = settingsCard.createSettingsCard();
     CardService.newNavigation().pushCard(card);
   }
 

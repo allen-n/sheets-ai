@@ -5,9 +5,11 @@ import { LLMProviders } from '@/llm/provider/base';
 import { OpenAIProvider } from '@/llm/provider/openai';
 import { SecretService } from '@/sheets/secrets';
 import { LLMUsageService } from '@/sheets/storage/llm-usage';
-import { handleAnalyticsToggle, resetAllSettings } from '@/ui/settingsCard';
 import { UIManager } from '@/ui/UIManager';
+import { SettingsCard } from '@/ui/settingsCard';
+
 const acMain = new AnalyticsConstants();
+
 const AppMenuName = 'SheetsAI Menu';
 const AppMenuMapping = new Map<string, string>([
   ['Set API Keys', setLLmApiKeys.name],
@@ -282,6 +284,3 @@ function showSettings() {
     action: 'open_settings',
   });
 }
-
-// Export the analytics-related functions for CardService
-export { handleAnalyticsToggle, resetAllSettings };
