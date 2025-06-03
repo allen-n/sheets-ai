@@ -1,9 +1,9 @@
-import { delayMs } from '@/common/utils';
+import { Utils } from '@/common/utils';
 
 // src/api/base.gs
-export class ApiServiceError extends Error {}
+class ApiServiceError extends Error {}
 
-export class ApiService {
+class ApiService {
   private baseUrl: string;
   private headers: Record<string, string>;
   private maxRetries: number;
@@ -68,6 +68,7 @@ export class ApiService {
     options: GoogleAppsScript.URL_Fetch.URLFetchRequestOptions = {}
   ): GoogleAppsScript.URL_Fetch.HTTPResponse {
     const url = `${this.baseUrl}${endpoint}`;
+    console.log('req to url:', url);
     const headers = { ...this.headers, ...options.headers };
     const config: GoogleAppsScript.URL_Fetch.URLFetchRequestOptions = {
       ...options,
@@ -91,7 +92,7 @@ export class ApiService {
       } catch (error) {
         innerError = error;
         tries++;
-        delayMs(500 * Math.pow(2, tries));
+        Utils.delayMs(500 * Math.pow(2, tries));
       }
     }
     throw new ApiServiceError(
@@ -118,9 +119,10 @@ export class ApiService {
       options.headers['Content-Type'] === 'application/x-www-form-urlencoded'
     ) {
       parsedBody = this.toUrlSearchParams(body);
-    } else {
+    } else if (typeof body === 'object') {
       parsedBody = JSON.stringify(body);
     }
+    console.log('req to', endpoint, parsedBody);
     return this.request(endpoint, {
       ...options,
       method: 'post',
@@ -179,3 +181,4 @@ export class ApiService {
     });
   }
 }
+export { ApiService, ApiServiceError };

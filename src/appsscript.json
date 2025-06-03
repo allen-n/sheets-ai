@@ -11,6 +11,7 @@
   "urlFetchWhitelist": [
     "https://trysheetsai.com/",
     "https://openai.com/",
-    "https://api.openai.com/"
+    "https://api.openai.com/",
+    "https://e.trysheetsai.com/"
   ]
 }

@@ -1,9 +1,13 @@
-import { cyrb64Hash, SheetsAIError } from '@/common/utils';
+import { AnalyticsConstants } from '@/analytics/constants';
+import { PostHogAnalytics } from '@/analytics/posthog';
+import { Utils, SheetsAIError } from '@/common/utils';
 import { LLMProviders } from '@/llm/provider/base';
 import { OpenAIProvider } from '@/llm/provider/openai';
 import { SecretService } from '@/sheets/secrets';
 import { LLMUsageService } from '@/sheets/storage/llm-usage';
 import { UIManager } from '@/ui/UIManager';
+
+const acMain = new AnalyticsConstants();
 
 const AppMenuName = 'SheetsAI Menu';
 const AppMenuMapping = new Map<string, string>([
@@ -13,7 +17,6 @@ const AppMenuMapping = new Map<string, string>([
 ]);
 
 const CACHE_TTL_SECONDS = 21600; // 6 hours
-const hash = cyrb64Hash;
 
 /**
  * Generates text using a large language model. Defaults to GPT-4o. Requires API key to be set in the `SheetsAI Menu > Set API Keys` menu.
@@ -26,15 +29,21 @@ export async function SHEETS_AI(
   query: string,
   context?: string
 ): Promise<string | void> {
+  // Track function call (without the query content)
+  const analytics = PostHogAnalytics.getInstance();
+  analytics.track(acMain.EVENTS.FUNCTION_CALL, {
+    hasContext: !!context,
+  });
+
   // Create a cache key based on input parameters
-  const cacheKey = `SHEETS_AI_${hash(query)}_${hash(context || '')}`;
+  const cacheKey = `SHEETS_AI_${Utils.cyrb64Hash(query)}_${Utils.cyrb64Hash(
+    context || ''
+  )}`;
 
   // Get the cache
   const cache = CacheService.getUserCache();
   const cachedResult = cache.get(cacheKey);
-  Logger.log('cacheKey: ' + cacheKey);
-  Logger.log('cachedResult: ' + cachedResult);
-  Logger.log('isCacheHit: ' + !!cachedResult);
+
   // Return cached result if available
   if (cachedResult) {
     return cachedResult;
@@ -98,10 +107,21 @@ function onOpen() {
     menu.addItem(key, value);
   });
   menu.addToUi();
+
+  // Track addon opened event
+  const analytics = PostHogAnalytics.getInstance();
+  analytics.track(acMain.EVENTS.ADDON_OPENED);
 }
 
 function onInstall() {
   // TODO @allen-n: Consider doing other onboarding tasks here
+  try {
+    // Track addon opened event
+    const analytics = PostHogAnalytics.getInstance();
+    analytics.track(acMain.EVENTS.ADDON_INSTALLED);
+  } catch (e) {
+    console.log('Install logging error:', e);
+  }
   onOpen();
   UIManager.showAlert(
     'Installation Complete',
@@ -168,6 +188,10 @@ export function include(filename: string, data?: any): string {
 
 function showHelpSidebar() {
   UIManager.showHelpSidebar();
+
+  // Track sidebar opened event
+  const analytics = PostHogAnalytics.getInstance();
+  analytics.track(acMain.EVENTS.SIDEBAR_OPENED);
 }
 
 // Function to open the Set Secrets modal
@@ -202,6 +226,11 @@ export function saveApiKey(provider: LLMProviders, key: string) {
     case 'openai':
       const secretService = new SecretService();
       secretService.setSecret('USER_OPENAI_KEY', key);
+
+      // Track API key set event (without the key itself)
+      const analytics = PostHogAnalytics.getInstance();
+      analytics.track(acMain.EVENTS.API_KEY_SET, { provider });
+
       return `OpenAI API Key saved successfully!`;
     default:
       throw new SheetsAIError('Invalid LLM Provider selected: ' + provider);
@@ -232,4 +261,26 @@ export function clearSheetsAICache() {
   } catch (error) {
     console.error('Failed to clear cache: ' + error);
   }
+}
+
+/**
+ * Gets the current analytics opt-out status
+ * Used by the sidebar toggle
+ * @returns True if analytics are opted out (disabled)
+ */
+function getAnalyticsStatus() {
+  const analytics = PostHogAnalytics.getInstance();
+  return analytics.isOptedOut();
+}
+
+/**
+ * Sets the analytics opt-out status
+ * Used by the sidebar toggle
+ * @param optOut True to opt out (disable), false to opt in (enable)
+ */
+function setAnalyticsStatus(optOut: boolean): boolean {
+  const analytics = PostHogAnalytics.getInstance();
+  analytics.setOptOut(optOut);
+
+  return optOut;
 }

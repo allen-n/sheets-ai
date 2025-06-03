@@ -8,13 +8,16 @@ This project is a Google Sheets add-on developed using Google Apps Script and Ty
 
 ## Table of Contents
 
-- [Installation](#installation)
-- [Development](#development)
-- [Deployment](#deployment)
-- [Usage](#usage)
-- [Testing](#testing)
-- [Contributing](#contributing)
-- [License](#license)
+- [SheetsAI](#sheetsai)
+  - [Table of Contents](#table-of-contents)
+  - [Installation](#installation)
+  - [Development](#development)
+  - [Deployment](#deployment)
+  - [Usage](#usage)
+  - [Testing](#testing)
+  - [Contributing](#contributing)
+  - [License](#license)
+  - [De-Identified Analytics](#de-identified-analytics)
 
 ## Installation
 
@@ -98,3 +101,12 @@ This work is licensed under a
 [cc-by-nc]: https://creativecommons.org/licenses/by-nc/4.0/
 [cc-by-nc-image]: https://licensebuttons.net/l/by-nc/4.0/88x31.png
 [cc-by-nc-shield]: https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey.svg
+
+## De-Identified Analytics
+
+SheetsAI uses PostHog to collect anonymous usage data to improve the add-on. The analytics implementation follows these key principles:
+
+- No sheet content, prompts, or raw user emails are collected
+- Users can opt out at any time via the Settings UI
+- Events are batched to respect Google Apps Script quotas
+- All data is tied to a randomly generated UUID and, when available, a hashed email
