@@ -1,6 +1,7 @@
 import { PostHogAnalytics } from '@/analytics/posthog';
+import { getEvents } from '@/analytics/constants';
 import { getLogoUrl } from '@/common/utils';
-
+const getEventsSC = getEvents;
 /**
  * Creates a settings card with various user configuration options
  * @returns CardService.Card The settings card
@@ -80,6 +81,14 @@ export function handleAnalyticsToggle(
     analytics.removeTriggers();
   }
 
+  // Track the analytics opt-change event (if opted in)
+  if (isEnabled) {
+    analytics.track(getEventsSC().ANALYTICS_OPT_CHANGE, {
+      optOut: !isEnabled,
+      source: 'settings_ui',
+    });
+  }
+
   // Return an action response that doesn't navigate away
   return CardService.newActionResponseBuilder()
     .setNotification(
@@ -102,6 +111,9 @@ export function resetAllSettings(): GoogleAppsScript.Card_Service.ActionResponse
   const analytics = PostHogAnalytics.getInstance();
   analytics.setOptOut(false);
   analytics.ensureTriggers();
+
+  // Track the reset event
+  analytics.track(getEventsSC().MENU_ACTION, { action: 'reset_settings' });
 
   // Return an action response that reloads the card
   return CardService.newActionResponseBuilder()

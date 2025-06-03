@@ -7,10 +7,7 @@ import { SecretService } from '@/sheets/secrets';
 import { LLMUsageService } from '@/sheets/storage/llm-usage';
 import { handleAnalyticsToggle, resetAllSettings } from '@/ui/settingsCard';
 import { UIManager } from '@/ui/UIManager';
-
-// Local definition of events for analytics tracking
-const EVENTS = getEvents;
-
+const getEventsMain = getEvents;
 const AppMenuName = 'SheetsAI Menu';
 const AppMenuMapping = new Map<string, string>([
   ['Set API Keys', setLLmApiKeys.name],
@@ -35,7 +32,7 @@ export async function SHEETS_AI(
 ): Promise<string | void> {
   // Track function call (without the query content)
   const analytics = PostHogAnalytics.getInstance();
-  analytics.track(EVENTS().FUNCTION_CALL, { hasContext: !!context });
+  analytics.track(getEventsMain().FUNCTION_CALL, { hasContext: !!context });
 
   // Create a cache key based on input parameters
   const cacheKey = `SHEETS_AI_${hash(query)}_${hash(context || '')}`;
@@ -43,6 +40,7 @@ export async function SHEETS_AI(
   // Get the cache
   const cache = CacheService.getUserCache();
   const cachedResult = cache.get(cacheKey);
+
   // Return cached result if available
   if (cachedResult) {
     return cachedResult;
@@ -109,7 +107,7 @@ function onOpen() {
 
   // Track addon opened event
   const analytics = PostHogAnalytics.getInstance();
-  analytics.track(EVENTS().ADDON_OPENED);
+  analytics.track(getEventsMain().ADDON_OPENED);
 }
 
 function onInstall() {
@@ -132,7 +130,7 @@ function onInstall() {
 }
 
 /**
- * Handles edit ANALYTICS_EVENTS from the sheet.
+ * Handles edit events from the sheet.
  * This is called via the onEdit trigger set up in TriggerService.
  */
 function fireOnEdit(e: GoogleAppsScript.Events.SheetsOnEdit) {
@@ -187,7 +185,7 @@ function showHelpSidebar() {
 
   // Track sidebar opened event
   const analytics = PostHogAnalytics.getInstance();
-  analytics.track(EVENTS().SIDEBAR_OPENED);
+  analytics.track(getEventsMain().SIDEBAR_OPENED);
 }
 
 // Function to open the Set Secrets modal
@@ -225,7 +223,7 @@ export function saveApiKey(provider: LLMProviders, key: string) {
 
       // Track API key set event (without the key itself)
       const analytics = PostHogAnalytics.getInstance();
-      analytics.track(EVENTS().API_KEY_SET, { provider });
+      analytics.track(getEventsMain().API_KEY_SET, { provider });
 
       return `OpenAI API Key saved successfully!`;
     default:
@@ -272,13 +270,13 @@ function SheetsAI_AnalyticsFlush() {
   }
 }
 
-// Export the analytics-related functions for CardService
-export { handleAnalyticsToggle, resetAllSettings };
-
 function showSettings() {
   UIManager.showSettingsCard();
 
   // Track settings opened event
   const analytics = PostHogAnalytics.getInstance();
-  analytics.track(EVENTS().MENU_ACTION, { action: 'open_settings' });
+  analytics.track(getEventsMain().MENU_ACTION, { action: 'open_settings' });
 }
+
+// Export the analytics-related functions for CardService
+export { handleAnalyticsToggle, resetAllSettings };

@@ -38,16 +38,37 @@ const _QUEUE_CONFIG = {
   TRIGGER_INTERVAL_MINUTES: 1,
 };
 
-export const analyticsConstants = () => {
-  return {
-    EVENTS: _EVENTS,
-    PROPERTIES: _PROPERTIES,
-    POSTHOG_API: _POSTHOG_API,
-    CACHE_KEYS: _CACHE_KEYS,
-    QUEUE_CONFIG: _QUEUE_CONFIG,
-  };
-};
-
+/**
+ * Get event name constants
+ */
 export const getEvents = () => {
   return _EVENTS;
+};
+
+/**
+ * Get property name constants
+ */
+export const getProperties = () => {
+  return _PROPERTIES;
+};
+
+/**
+ * Get PostHog API constants
+ */
+export const getPosthogApi = () => {
+  return _POSTHOG_API;
+};
+
+/**
+ * Get cache key constants
+ */
+export const getCacheKeys = () => {
+  return _CACHE_KEYS;
+};
+
+/**
+ * Get queue configuration constants
+ */
+export const getQueueConfig = () => {
+  return _QUEUE_CONFIG;
 };
