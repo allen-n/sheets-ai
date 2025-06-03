@@ -1,13 +1,13 @@
-import { getEvents } from '@/analytics/constants';
+import { AnalyticsConstants } from '@/analytics/constants';
 import { PostHogAnalytics } from '@/analytics/posthog';
-import { cyrb64Hash, SheetsAIError } from '@/common/utils';
+import { Utils, SheetsAIError } from '@/common/utils';
 import { LLMProviders } from '@/llm/provider/base';
 import { OpenAIProvider } from '@/llm/provider/openai';
 import { SecretService } from '@/sheets/secrets';
 import { LLMUsageService } from '@/sheets/storage/llm-usage';
 import { handleAnalyticsToggle, resetAllSettings } from '@/ui/settingsCard';
 import { UIManager } from '@/ui/UIManager';
-const getEventsMain = getEvents;
+const acMain = new AnalyticsConstants();
 const AppMenuName = 'SheetsAI Menu';
 const AppMenuMapping = new Map<string, string>([
   ['Set API Keys', setLLmApiKeys.name],
@@ -17,7 +17,6 @@ const AppMenuMapping = new Map<string, string>([
 ]);
 
 const CACHE_TTL_SECONDS = 21600; // 6 hours
-const hash = cyrb64Hash;
 
 /**
  * Generates text using a large language model. Defaults to GPT-4o. Requires API key to be set in the `SheetsAI Menu > Set API Keys` menu.
@@ -32,10 +31,14 @@ export async function SHEETS_AI(
 ): Promise<string | void> {
   // Track function call (without the query content)
   const analytics = PostHogAnalytics.getInstance();
-  analytics.track(getEventsMain().FUNCTION_CALL, { hasContext: !!context });
+  analytics.track(acMain.EVENTS.FUNCTION_CALL, {
+    hasContext: !!context,
+  });
 
   // Create a cache key based on input parameters
-  const cacheKey = `SHEETS_AI_${hash(query)}_${hash(context || '')}`;
+  const cacheKey = `SHEETS_AI_${Utils.cyrb64Hash(query)}_${Utils.cyrb64Hash(
+    context || ''
+  )}`;
 
   // Get the cache
   const cache = CacheService.getUserCache();
@@ -107,7 +110,7 @@ function onOpen() {
 
   // Track addon opened event
   const analytics = PostHogAnalytics.getInstance();
-  analytics.track(getEventsMain().ADDON_OPENED);
+  analytics.track(acMain.EVENTS.ADDON_OPENED);
 }
 
 function onInstall() {
@@ -185,7 +188,7 @@ function showHelpSidebar() {
 
   // Track sidebar opened event
   const analytics = PostHogAnalytics.getInstance();
-  analytics.track(getEventsMain().SIDEBAR_OPENED);
+  analytics.track(acMain.EVENTS.SIDEBAR_OPENED);
 }
 
 // Function to open the Set Secrets modal
@@ -223,7 +226,7 @@ export function saveApiKey(provider: LLMProviders, key: string) {
 
       // Track API key set event (without the key itself)
       const analytics = PostHogAnalytics.getInstance();
-      analytics.track(getEventsMain().API_KEY_SET, { provider });
+      analytics.track(acMain.EVENTS.API_KEY_SET, { provider });
 
       return `OpenAI API Key saved successfully!`;
     default:
@@ -275,7 +278,9 @@ function showSettings() {
 
   // Track settings opened event
   const analytics = PostHogAnalytics.getInstance();
-  analytics.track(getEventsMain().MENU_ACTION, { action: 'open_settings' });
+  analytics.track(acMain.EVENTS.MENU_ACTION, {
+    action: 'open_settings',
+  });
 }
 
 // Export the analytics-related functions for CardService

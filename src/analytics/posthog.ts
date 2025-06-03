@@ -1,24 +1,23 @@
+import { AnalyticsConstants } from '@/analytics/constants';
 import { AnalyticsEvent, AnalyticsQueue } from './queue';
-import {
-  getEvents,
-  getPosthogApi,
-  getProperties,
-  getQueueConfig,
-} from './constants';
+import { ApiService } from '@/api/base';
 
-const getEventsPH = getEvents;
-const getPosthogApiPH = getPosthogApi;
-const getPropertiesPH = getProperties;
-const getQueueConfigPH = getQueueConfig;
+const acPH = new AnalyticsConstants();
 /**
  * Main PostHog analytics implementation for SheetsAI
  */
 export class PostHogAnalytics {
   private static instance: PostHogAnalytics;
+  private readonly apiService: ApiService;
   private readonly userProps = PropertiesService.getUserProperties();
   private readonly scriptProps = PropertiesService.getScriptProperties();
   private readonly queue = AnalyticsQueue.getInstance();
 
+  private constructor() {
+    this.apiService = new ApiService(acPH.POSTHOG_API.BASE_URL, {
+      'Content-Type': 'application/json',
+    });
+  }
   /**
    * Get the singleton instance of PostHogAnalytics
    */
@@ -59,7 +58,10 @@ export class PostHogAnalytics {
       this.queue.addEvent(event);
 
       // If queue has reached threshold, trigger a flush
-      if (this.queue.getQueueLength() >= getQueueConfigPH().MAX_BATCH_SIZE) {
+      if (
+        this.queue.getQueueLength() >= acPH.QUEUE_CONFIG.MAX_BATCH_SIZE ||
+        true
+      ) {
         this.flushQueue();
       }
     } catch (error) {
@@ -83,8 +85,7 @@ export class PostHogAnalytics {
         return;
       }
 
-      const posthogApi = getPosthogApiPH();
-      const batchUrl = `${posthogApi.BASE_URL}${posthogApi.BATCH_ENDPOINT}`;
+      const batchUrl = `${acPH.POSTHOG_API.BASE_URL}${acPH.POSTHOG_API.BATCH_ENDPOINT}`;
 
       const payload = {
         api_key: apiKey,
@@ -125,9 +126,9 @@ export class PostHogAnalytics {
       this.removeTriggers();
 
       // Then create a new one
-      ScriptApp.newTrigger(getQueueConfigPH().TRIGGER_NAME)
+      ScriptApp.newTrigger(acPH.QUEUE_CONFIG.TRIGGER_NAME)
         .timeBased()
-        .everyMinutes(getQueueConfigPH().TRIGGER_INTERVAL_MINUTES)
+        .everyMinutes(acPH.QUEUE_CONFIG.TRIGGER_INTERVAL_MINUTES)
         .create();
     } catch (error) {
       console.error('Failed to set up analytics triggers:', error);
@@ -141,7 +142,7 @@ export class PostHogAnalytics {
     try {
       const triggers = ScriptApp.getProjectTriggers();
       for (const trigger of triggers) {
-        if (trigger.getHandlerFunction() === getQueueConfigPH().TRIGGER_NAME) {
+        if (trigger.getHandlerFunction() === acPH.QUEUE_CONFIG.TRIGGER_NAME) {
           ScriptApp.deleteTrigger(trigger);
         }
       }
@@ -156,10 +157,10 @@ export class PostHogAnalytics {
    */
   public setOptOut(optOut: boolean): void {
     this.userProps.setProperty(
-      getPropertiesPH().ANALYTICS_OPT_OUT,
+      acPH.PROPERTIES.ANALYTICS_OPT_OUT,
       optOut.toString()
     );
-    this.track(getEventsPH().ANALYTICS_OPT_CHANGE, { optOut });
+    this.track(acPH.EVENTS.ANALYTICS_OPT_CHANGE, { optOut });
   }
 
   /**
@@ -167,7 +168,7 @@ export class PostHogAnalytics {
    */
   public isOptedOut(): boolean {
     const optOut = this.userProps.getProperty(
-      getPropertiesPH().ANALYTICS_OPT_OUT
+      acPH.PROPERTIES.ANALYTICS_OPT_OUT
     );
     return optOut === 'true';
   }
@@ -176,10 +177,10 @@ export class PostHogAnalytics {
    * Get or create a persistent user UUID
    */
   public getUuid(): string {
-    let uuid = this.userProps.getProperty(getPropertiesPH().UUID);
+    let uuid = this.userProps.getProperty(acPH.PROPERTIES.UUID);
     if (!uuid) {
       uuid = Utilities.getUuid();
-      this.userProps.setProperty(getPropertiesPH().UUID, uuid);
+      this.userProps.setProperty(acPH.PROPERTIES.UUID, uuid);
     }
     return uuid;
   }
@@ -215,7 +216,7 @@ export class PostHogAnalytics {
    * Get the PostHog project key from ScriptProperties
    */
   private getProjectKey(): string | null {
-    return this.scriptProps.getProperty(getPropertiesPH().PH_PROJECT_KEY);
+    return this.scriptProps.getProperty(acPH.PROPERTIES.PH_PROJECT_KEY);
   }
 
   /**

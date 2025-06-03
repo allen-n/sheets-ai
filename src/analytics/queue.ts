@@ -1,6 +1,7 @@
-import { getCacheKeys } from './constants';
+import { AnalyticsConstants } from './constants';
 
-const getCacheKeysQ = getCacheKeys;
+// const getCacheKeysQ = getCacheKeys;
+const acQueue = new AnalyticsConstants();
 /**
  * Interface for analytics events to be tracked
  */
@@ -55,7 +56,7 @@ export class AnalyticsQueue {
    */
   public clearQueue(): void {
     this.memoryQueue = [];
-    this.cache.remove(getCacheKeysQ().ANALYTICS_QUEUE);
+    this.cache.remove(acQueue.CACHE_KEYS.ANALYTICS_QUEUE);
   }
 
   /**
@@ -72,7 +73,7 @@ export class AnalyticsQueue {
     try {
       // Store up to 100KB (CacheService limit) worth of events
       const queueStr = JSON.stringify(this.memoryQueue);
-      this.cache.put(getCacheKeysQ().ANALYTICS_QUEUE, queueStr, 21600); // 6 hour cache
+      this.cache.put(acQueue.CACHE_KEYS.ANALYTICS_QUEUE, queueStr, 21600); // 6 hour cache
     } catch (error) {
       console.warn('Failed to save analytics queue to cache:', error);
     }
@@ -83,7 +84,7 @@ export class AnalyticsQueue {
    */
   private loadFromCache(): void {
     try {
-      const cachedQueue = this.cache.get(getCacheKeysQ().ANALYTICS_QUEUE);
+      const cachedQueue = this.cache.get(acQueue.CACHE_KEYS.ANALYTICS_QUEUE);
       if (cachedQueue) {
         this.memoryQueue = JSON.parse(cachedQueue);
       }
