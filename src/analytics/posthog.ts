@@ -116,11 +116,11 @@ export class PostHogAnalytics {
    * @param optOut True to opt out, false to opt in
    */
   public setOptOut(optOut: boolean): void {
+    this.track(acPH.EVENTS.ANALYTICS_OPT_CHANGE, { optOut });
     this.userProps.setProperty(
       acPH.PROPERTIES.ANALYTICS_OPT_OUT,
       optOut.toString()
     );
-    this.track(acPH.EVENTS.ANALYTICS_OPT_CHANGE, { optOut });
   }
 
   /**
