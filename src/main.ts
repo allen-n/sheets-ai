@@ -123,10 +123,6 @@ function onInstall() {
   showHelpSidebar();
   try {
     PropertiesService.getUserProperties();
-
-    // Set up analytics triggers on installation
-    const analytics = PostHogAnalytics.getInstance();
-    analytics.ensureTriggers();
   } catch (e) {
     authorizeApp();
   }
@@ -261,19 +257,6 @@ export function clearSheetsAICache() {
 }
 
 /**
- * Time-based trigger handler for flushing analytics queue
- * This is called automatically by the time-based trigger
- */
-function SheetsAI_AnalyticsFlush() {
-  try {
-    const analytics = PostHogAnalytics.getInstance();
-    analytics.flushQueue();
-  } catch (error) {
-    console.error('Error in analytics flush:', error);
-  }
-}
-
-/**
  * Gets the current analytics opt-out status
  * Used by the sidebar toggle
  * @returns True if analytics are opted out (disabled)
@@ -291,13 +274,6 @@ function getAnalyticsStatus() {
 function setAnalyticsStatus(optOut: boolean): boolean {
   const analytics = PostHogAnalytics.getInstance();
   analytics.setOptOut(optOut);
-
-  // If enabling analytics, ensure triggers are set up
-  if (!optOut) {
-    analytics.ensureTriggers();
-  } else {
-    analytics.removeTriggers();
-  }
 
   return optOut;
 }

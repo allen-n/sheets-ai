@@ -1,5 +1,6 @@
 import { AnalyticsEvent, AnalyticsQueue } from './queue';
 import { AnalyticsConstants } from './constants';
+import { Utils } from '@/common/utils';
 
 // Create constants instance
 const acPH = new AnalyticsConstants();
@@ -12,6 +13,9 @@ export class PostHogAnalytics {
   private readonly userProps = PropertiesService.getUserProperties();
   private readonly scriptProps = PropertiesService.getScriptProperties();
   private readonly queue = AnalyticsQueue.getInstance();
+  private readonly cache = CacheService.getUserCache();
+  private readonly FLUSH_LOCK_KEY = 'analytics_flush_lock';
+  private readonly FLUSH_LOCK_EXPIRY = 60; // 60 seconds
 
   /**
    * Get the singleton instance of PostHogAnalytics
@@ -52,12 +56,41 @@ export class PostHogAnalytics {
 
       this.queue.addEvent(event);
 
-      // If queue has reached threshold, trigger a flush
+      // If queue has reached threshold, trigger an immediate flush
       if (this.queue.getQueueLength() >= acPH.QUEUE_CONFIG.MAX_BATCH_SIZE) {
         this.flushQueue();
+      } else {
+        // Otherwise, schedule a delayed flush if one isn't already scheduled
+        this.scheduleDelayedFlush();
       }
     } catch (error) {
       console.error('Error tracking event:', error);
+    }
+  }
+
+  /**
+   * Schedule a delayed flush using cache as a lock mechanism
+   * This prevents multiple flush operations and eliminates the need for triggers
+   */
+  private scheduleDelayedFlush(): void {
+    try {
+      // Try to acquire the flush lock
+      const currentLock = this.cache.get(this.FLUSH_LOCK_KEY);
+
+      // If no lock exists, create one and schedule the flush
+      if (!currentLock) {
+        // Set lock with expiration
+        this.cache.put(this.FLUSH_LOCK_KEY, 'locked', this.FLUSH_LOCK_EXPIRY);
+
+        // Use time-driven trigger with immediate execution
+        // This will run once and then remove itself
+        Utils.delayMs(20000);
+        this.flushQueue();
+      }
+
+      // If lock exists, another flush is already scheduled, so just add event to queue and do nothing
+    } catch (error) {
+      console.error('Failed to schedule analytics flush:', error);
     }
   }
 
@@ -67,6 +100,8 @@ export class PostHogAnalytics {
   public flushQueue(): void {
     try {
       const events = this.queue.getEvents();
+      // We have already loaded events into memory, so we can remove the lock
+      this.cache.remove(this.FLUSH_LOCK_KEY);
       if (events.length === 0) {
         return;
       }
@@ -96,6 +131,9 @@ export class PostHogAnalytics {
       const responseCode = response.getResponseCode();
 
       if (responseCode >= 200 && responseCode < 300) {
+        console.log(
+          `Analytics batch sent successfully. Flushed ${this.queue.getQueueLength()} events. Response code: ${responseCode}`
+        );
         this.queue.clearQueue();
       } else {
         console.error(
@@ -106,40 +144,6 @@ export class PostHogAnalytics {
       }
     } catch (error) {
       console.error('Error flushing analytics queue:', error);
-    }
-  }
-
-  /**
-   * Ensure time-driven triggers are set up for queue flushing
-   */
-  public ensureTriggers(): void {
-    try {
-      // First remove any existing triggers
-      this.removeTriggers();
-
-      // Then create a new one
-      ScriptApp.newTrigger(acPH.QUEUE_CONFIG.TRIGGER_NAME)
-        .timeBased()
-        .everyMinutes(acPH.QUEUE_CONFIG.TRIGGER_INTERVAL_MINUTES)
-        .create();
-    } catch (error) {
-      console.error('Failed to set up analytics triggers:', error);
-    }
-  }
-
-  /**
-   * Remove existing analytics triggers
-   */
-  public removeTriggers(): void {
-    try {
-      const triggers = ScriptApp.getProjectTriggers();
-      for (const trigger of triggers) {
-        if (trigger.getHandlerFunction() === acPH.QUEUE_CONFIG.TRIGGER_NAME) {
-          ScriptApp.deleteTrigger(trigger);
-        }
-      }
-    } catch (error) {
-      console.error('Failed to remove analytics triggers:', error);
     }
   }
 
