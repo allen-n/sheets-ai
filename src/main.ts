@@ -6,7 +6,6 @@ import { OpenAIProvider } from '@/llm/provider/openai';
 import { SecretService } from '@/sheets/secrets';
 import { LLMUsageService } from '@/sheets/storage/llm-usage';
 import { UIManager } from '@/ui/UIManager';
-import { SettingsCard } from '@/ui/settingsCard';
 
 const acMain = new AnalyticsConstants();
 
@@ -14,7 +13,6 @@ const AppMenuName = 'SheetsAI Menu';
 const AppMenuMapping = new Map<string, string>([
   ['Set API Keys', setLLmApiKeys.name],
   ['Get Help', showHelpSidebar.name],
-  ['Settings', showSettings.name],
   ['Clear Cache', clearSheetsAICache.name],
 ]);
 
@@ -275,12 +273,31 @@ function SheetsAI_AnalyticsFlush() {
   }
 }
 
-function showSettings() {
-  UIManager.showSettingsCard();
-
-  // Track settings opened event
+/**
+ * Gets the current analytics opt-out status
+ * Used by the sidebar toggle
+ * @returns True if analytics are opted out (disabled)
+ */
+function getAnalyticsStatus() {
   const analytics = PostHogAnalytics.getInstance();
-  analytics.track(acMain.EVENTS.MENU_ACTION, {
-    action: 'open_settings',
-  });
+  return analytics.isOptedOut();
+}
+
+/**
+ * Sets the analytics opt-out status
+ * Used by the sidebar toggle
+ * @param optOut True to opt out (disable), false to opt in (enable)
+ */
+function setAnalyticsStatus(optOut: boolean): boolean {
+  const analytics = PostHogAnalytics.getInstance();
+  analytics.setOptOut(optOut);
+
+  // If enabling analytics, ensure triggers are set up
+  if (!optOut) {
+    analytics.ensureTriggers();
+  } else {
+    analytics.removeTriggers();
+  }
+
+  return optOut;
 }
