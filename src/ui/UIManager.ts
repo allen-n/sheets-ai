@@ -78,7 +78,7 @@ export class UIManager {
       'ui/html/SetLLMProvider.html',
       {
         width: 600,
-        height: 400,
+        height: 470,
       }
     );
     this.showModalDialog(htmlOutput, 'Set your LLM API Key(s)');

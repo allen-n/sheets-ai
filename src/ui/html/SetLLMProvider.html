@@ -85,6 +85,35 @@
         background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6'/%3E%3Cpolyline points='15 3 21 3 21 9'/%3E%3Cline x1='10' y1='14' x2='21' y2='3'/%3E%3C/svg%3E");
         background-repeat: no-repeat;
       }
+      .loading-spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(0, 0, 0, 0.1);
+        border-left-color: #09f;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-left: 8px;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .refresh-models {
+        background-color: transparent;
+        border: none;
+        color: #2563eb;
+        cursor: pointer;
+        font-size: 14px;
+        padding: 0;
+        margin-left: 8px;
+        display: inline-flex;
+        align-items: center;
+      }
+      .refresh-models:hover {
+        text-decoration: underline;
+      }
     </style>
   </head>
   <body>
@@ -107,6 +136,28 @@
         </div>
 
         <div class="input-group">
+          <label for="model"
+            >Default Model <span id="model-loading"></span
+          ></label>
+          <div class="input-wrapper">
+            <select
+              id="model"
+              name="model"
+              required
+              aria-label="Select Default Model"
+            >
+              <!-- Models will be populated dynamically -->
+            </select>
+          </div>
+          <p class="description">
+            Select the default model to use for queries.
+            <button type="button" class="refresh-models" id="refresh-models">
+              Refresh models
+            </button>
+          </p>
+        </div>
+
+        <div class="input-group">
           <label for="api-key">API Key</label>
           <div class="hints">
             <div class="api-key-info">
@@ -120,7 +171,7 @@
               id="api-key"
               name="api-key"
               required
-              placeholder="Enter your API key (i.e., sk_test_...)"
+              placeholder="Enter your API key (i.e., sk-...)"
               aria-label="API Key"
             />
           </div>
@@ -139,14 +190,26 @@
     <script>
       document.addEventListener('DOMContentLoaded', function () {
         const providerElement = document.getElementById('provider');
+        const modelElement = document.getElementById('model');
+        const apiKeyElement = document.getElementById('api-key');
+        const currentApiKeyElement = document.getElementById('current-api-key');
         const saveButton = document.getElementById('saveButton');
+        const modelLoadingElement = document.getElementById('model-loading');
+        const refreshModelsButton = document.getElementById('refresh-models');
 
         // Initial API key fetch
         getCurrentApiKey(providerElement.value);
+        loadAvailableModels(providerElement.value);
 
         // Provider change event
         providerElement.addEventListener('change', function (e) {
           getCurrentApiKey(e.target.value);
+          loadAvailableModels(e.target.value);
+        });
+
+        // Refresh models button
+        refreshModelsButton.addEventListener('click', function () {
+          loadAvailableModels(providerElement.value);
         });
 
         // Form submission
@@ -155,9 +218,11 @@
           .addEventListener('submit', function (e) {
             e.preventDefault();
             const provider = providerElement.value;
-            const apiKey = document.getElementById('api-key').value;
-
-            if (!provider || !apiKey) {
+            const model = modelElement.value;
+            const apiKey =
+              apiKeyElement.value || currentApiKeyElement.textContent;
+            const redactedCurrentApiKey = currentApiKeyElement.textContent;
+            if (!provider || (!apiKey && !redactedCurrentApiKey) || !model) {
               SheetsAI.showToast('Please fill in all fields', 'error');
               return;
             }
@@ -173,10 +238,10 @@
                 saveButton.textContent = 'Saved';
                 SheetsAI.showToast('API key saved successfully!');
 
-                // Close the modal after a short delay
-                setTimeout(function () {
-                  google.script.host.close();
-                }, 1500);
+                // Uncomment to close the modal after a short delay
+                // setTimeout(function () {
+                //   google.script.host.close();
+                // }, 1500);
               },
               onFailure: function (error) {
                 SheetsAI.showToast('Failed to save API key: ' + error, 'error');
@@ -184,8 +249,74 @@
             });
 
             // Call the function with parameters
-            saveApiKeyFn(provider, apiKey);
+            saveApiKeyFn(provider, apiKey, model);
           });
+
+        /**
+         * Load available models from the OpenAI API
+         */
+        function loadAvailableModels(provider) {
+          // Show loading spinner
+          modelLoadingElement.innerHTML = '<div class="loading-spinner"></div>';
+
+          const getAvailableModelsFn = SheetsAI.callServer(
+            'getAvailableModels',
+            {
+              onSuccess: function (models) {
+                // Clear existing options except the default one
+                while (modelElement.options.length > 0) {
+                  modelElement.remove(0);
+                }
+
+                // Add new options
+                models.forEach(function (model) {
+                  const option = document.createElement('option');
+                  option.value = model;
+                  option.textContent = model;
+                  modelElement.appendChild(option);
+                });
+
+                // Remove loading spinner
+                modelLoadingElement.innerHTML = '';
+
+                // If a model was previously selected, try to reselect it
+                const storedModel = getCurrentModel();
+                if (storedModel) {
+                  for (let i = 0; i < modelElement.options.length; i++) {
+                    if (modelElement.options[i].value === storedModel) {
+                      modelElement.selectedIndex = i;
+                      break;
+                    }
+                  }
+                }
+
+                SheetsAI.showToast('Models refreshed successfully');
+              },
+              onFailure: function (error) {
+                // Remove loading spinner
+                modelLoadingElement.innerHTML = '';
+                SheetsAI.showToast('Failed to load models: ' + error, 'error');
+              },
+            }
+          );
+
+          // Call the function with parameters
+          getAvailableModelsFn(provider);
+        }
+
+        /**
+         * Get current selected model from local storage
+         */
+        function getCurrentModel() {
+          return localStorage.getItem('sheetsai_current_model');
+        }
+
+        /**
+         * Set current selected model to local storage
+         */
+        function setCurrentModel(model) {
+          localStorage.setItem('sheetsai_current_model', model);
+        }
       });
 
       /**
@@ -195,6 +326,7 @@
         const getStoredApiKeyFn = SheetsAI.callServer('getStoredApiKey', {
           onSuccess: function (data) {
             const storedKey = data.key;
+            const storedModel = data.model;
             const instructionUrl = data.instructionUrl;
 
             // Update the current key display
@@ -202,6 +334,40 @@
             keyElement.textContent = storedKey
               ? 'Current key is: ' + storedKey
               : 'No key is currently set for this provider.';
+
+            const apiKeyElement = document.getElementById('api-key');
+            if (storedKey) {
+              apiKeyElement.required = false;
+            }
+
+            // Update the selected model if available
+            if (storedModel) {
+              const modelElement = document.getElementById('model');
+
+              // First check if the model exists in the dropdown
+              let modelExists = false;
+              for (let i = 0; i < modelElement.options.length; i++) {
+                if (modelElement.options[i].value === storedModel) {
+                  modelElement.selectedIndex = i;
+                  modelExists = true;
+                  break;
+                }
+              }
+
+              // If the model doesn't exist in the dropdown, add it
+              if (!modelExists) {
+                const option = document.createElement('option');
+                option.value = storedModel;
+                option.textContent = storedModel;
+                modelElement.appendChild(option);
+
+                // Select the newly added option
+                modelElement.value = storedModel;
+              }
+
+              // Store in local storage
+              localStorage.setItem('sheetsai_current_model', storedModel);
+            }
 
             // Update the instructions link
             const instructionsElement = document.getElementById(
@@ -212,6 +378,16 @@
             } else {
               instructionsElement.innerHTML = '';
             }
+
+            // // If we have an API key, try to load models
+            // const apiKeyElement = document.getElementById('api-key');
+            // if (storedKey && storedKey.includes('*')) {
+            //   // We need to wait for the user to enter their API key again
+            //   // since we don't store the full key for security reasons
+            // } else if (apiKeyElement.value) {
+            //   loadAvailableModels(apiKeyElement.value);
+            // }
+            return storedKey;
           },
           onFailure: function (error) {
             console.error('Failed to get API key:', error);
