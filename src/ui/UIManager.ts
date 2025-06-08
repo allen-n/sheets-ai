@@ -81,7 +81,7 @@ export class UIManager {
         height: 470,
       }
     );
-    this.showModalDialog(htmlOutput, 'Set your LLM API Key(s)');
+    this.showModalDialog(htmlOutput, 'SheetsAI Settings');
   }
 
   /**

@@ -5,7 +5,6 @@ import { LLMProviders } from '@/llm/provider/base';
 import { OpenAIProvider } from '@/llm/provider/openai';
 import {
   fetchAvailableModels,
-  getDefaultChatModels,
   getDefaultModel,
   OpenAiTextModelNames,
 } from '@/llm/types/openai';
@@ -19,8 +18,8 @@ const fetchAvailableModelsMain = fetchAvailableModels; // CLASP workaround
 
 const AppMenuName = 'SheetsAI Menu';
 const AppMenuMapping = new Map<string, string>([
-  ['Set API Keys', setLLmApiKeys.name],
-  ['Get Help', showHelpSidebar.name],
+  ['Settings', setLLmApiKeys.name],
+  ['Help', showHelpSidebar.name],
   ['Clear Cache', clearSheetsAICache.name],
 ]);
 

@@ -219,8 +219,7 @@
             e.preventDefault();
             const provider = providerElement.value;
             const model = modelElement.value;
-            const apiKey =
-              apiKeyElement.value || currentApiKeyElement.textContent;
+            const apiKey = apiKeyElement.value;
             const redactedCurrentApiKey = currentApiKeyElement.textContent;
             if (!provider || (!apiKey && !redactedCurrentApiKey) || !model) {
               SheetsAI.showToast('Please fill in all fields', 'error');
@@ -236,7 +235,9 @@
                 getCurrentApiKey(provider);
                 saveButton.classList.add('completed');
                 saveButton.textContent = 'Saved';
-                SheetsAI.showToast('API key saved successfully!');
+                SheetsAI.showToast(
+                  'Settings saved successfully! You can now close this window.'
+                );
 
                 // Uncomment to close the modal after a short delay
                 // setTimeout(function () {
