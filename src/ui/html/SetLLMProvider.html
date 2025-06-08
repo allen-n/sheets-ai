@@ -32,6 +32,7 @@
         box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
       }
       input[type='text'],
+      input[type='password'],
       select {
         flex-grow: 1;
         border: none;
@@ -118,7 +119,6 @@
   </head>
   <body>
     <div class="container">
-      <h2>LLM API Key Configuration</h2>
       <form id="apiForm">
         <div class="input-group">
           <label for="provider">Select Provider</label>
@@ -167,22 +167,36 @@
           </div>
           <div class="input-wrapper">
             <input
-              type="text"
+              type="password"
               id="api-key"
               name="api-key"
               required
               placeholder="Enter your API key (i.e., sk-...)"
               aria-label="API Key"
+              autocomplete="off"
+              spellcheck="false"
             />
           </div>
           <p class="description">
             Your secret API key. Keep this safe and do not share it publicly.
           </p>
         </div>
-
-        <button type="submit" id="saveButton" class="primary-button">
-          Save
-        </button>
+        <div class="button-container">
+          <button
+            type="button"
+            id="closeButton"
+            class="ui-button secondary-button"
+          >
+            Close
+          </button>
+          <button
+            type="submit"
+            id="saveButton"
+            class="ui-button primary-button"
+          >
+            Save
+          </button>
+        </div>
       </form>
     </div>
 
@@ -194,6 +208,7 @@
         const apiKeyElement = document.getElementById('api-key');
         const currentApiKeyElement = document.getElementById('current-api-key');
         const saveButton = document.getElementById('saveButton');
+        const closeButton = document.getElementById('closeButton');
         const modelLoadingElement = document.getElementById('model-loading');
         const refreshModelsButton = document.getElementById('refresh-models');
 
@@ -210,6 +225,10 @@
         // Refresh models button
         refreshModelsButton.addEventListener('click', function () {
           loadAvailableModels(providerElement.value);
+        });
+
+        closeButton.addEventListener('click', function () {
+          google.script.host.close();
         });
 
         // Form submission
@@ -238,11 +257,6 @@
                 SheetsAI.showToast(
                   'Settings saved successfully! You can now close this window.'
                 );
-
-                // Uncomment to close the modal after a short delay
-                // setTimeout(function () {
-                //   google.script.host.close();
-                // }, 1500);
               },
               onFailure: function (error) {
                 SheetsAI.showToast('Failed to save API key: ' + error, 'error');
