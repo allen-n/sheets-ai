@@ -8,7 +8,7 @@
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    padding: 20px;
+    padding: 0px;
     margin: 0;
     min-height: 100vh;
   }
@@ -20,7 +20,6 @@
     border-radius: 12px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     width: 100%;
-    max-width: 500px;
     box-sizing: border-box;
   }
 
@@ -86,39 +85,33 @@
   }
 
   /* Primary button - for main actions */
-  .primary-button {
+  .ui-button {
     background-color: #111111;
-    color: white;
+    color: #fff;
     width: 100%;
     padding: 12px 20px;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    border: 1.5px solid #111111;
   }
 
-  .primary-button:hover:not(:disabled) {
-    background-color: #000000;
+  .ui-button:hover:not(:disabled) {
     transform: translateY(-1px);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
-  .primary-button:active:not(:disabled) {
+  .ui-button:active:not(:disabled) {
     transform: translateY(0);
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+  .primary-button {
+    background-color: #111111;
+    color: #fff;
   }
 
   /* Secondary button - for secondary actions */
   .secondary-button {
-    background-color: #f5f5f5;
+    background-color: #fff;
     color: #111111;
-    border: 1px solid #e5e5e5;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    padding: 8px 14px;
-  }
-
-  .secondary-button:hover:not(:disabled) {
-    background-color: #e9e9e9;
   }
 
   /* Copy button for code snippets */

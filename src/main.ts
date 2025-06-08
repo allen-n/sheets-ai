@@ -1,25 +1,32 @@
 import { AnalyticsConstants } from '@/analytics/constants';
 import { PostHogAnalytics } from '@/analytics/posthog';
-import { Utils, SheetsAIError } from '@/common/utils';
+import { SheetsAIError, Utils } from '@/common/utils';
 import { LLMProviders } from '@/llm/provider/base';
 import { OpenAIProvider } from '@/llm/provider/openai';
+import {
+  fetchAvailableModels,
+  getDefaultModel,
+  OpenAiTextModelNames,
+} from '@/llm/types/openai';
 import { SecretService } from '@/sheets/secrets';
 import { LLMUsageService } from '@/sheets/storage/llm-usage';
 import { UIManager } from '@/ui/UIManager';
 
 const acMain = new AnalyticsConstants();
+const getDefaultModelMain = getDefaultModel; // CLASP workaround
+const fetchAvailableModelsMain = fetchAvailableModels; // CLASP workaround
 
 const AppMenuName = 'SheetsAI Menu';
 const AppMenuMapping = new Map<string, string>([
-  ['Set API Keys', setLLmApiKeys.name],
-  ['Get Help', showHelpSidebar.name],
+  ['Settings', setLLmApiKeys.name],
+  ['Help', showHelpSidebar.name],
   ['Clear Cache', clearSheetsAICache.name],
 ]);
 
 const CACHE_TTL_SECONDS = 21600; // 6 hours
 
 /**
- * Generates text using a large language model. Defaults to GPT-4o. Requires API key to be set in the `SheetsAI Menu > Set API Keys` menu.
+ * Generates text using a large language model. Uses the model configured in settings or defaults to gpt-4.1-nano. Requires API key to be set in the `SheetsAI Menu > Set API Keys` menu.
  * @param {string} query The query for the model, i.e. "What is the capital of the United States?" or "Is the animal in this cell a feline?"
  * @param {string | undefined} context [optional] If provided, will add this context into the query, i.e. if asking "Is the animal in this cell a feline?" and the context is a cell containing the word "Cat" or "dog".
  * @returns {string} The generated text from the model.
@@ -29,12 +36,6 @@ export async function SHEETS_AI(
   query: string,
   context?: string
 ): Promise<string | void> {
-  // Track function call (without the query content)
-  const analytics = PostHogAnalytics.getInstance();
-  analytics.track(acMain.EVENTS.FUNCTION_CALL, {
-    hasContext: !!context,
-  });
-
   // Create a cache key based on input parameters
   const cacheKey = `SHEETS_AI_${Utils.cyrb64Hash(query)}_${Utils.cyrb64Hash(
     context || ''
@@ -43,13 +44,16 @@ export async function SHEETS_AI(
   // Get the cache
   const cache = CacheService.getUserCache();
   const cachedResult = cache.get(cacheKey);
+  let completionTextLength: number = 0;
+  let selectedModel: string | null = null;
 
   // Return cached result if available
   if (cachedResult) {
     return cachedResult;
   }
 
-  const apiKey = new SecretService().getSecret('USER_OPENAI_KEY');
+  const secretService = new SecretService();
+  const apiKey = secretService.getSecret('USER_OPENAI_KEY');
   if (!apiKey) {
     try {
       UIManager.showAlert(
@@ -62,6 +66,13 @@ export async function SHEETS_AI(
     } catch (error) {
       // Handle case when UI operations aren't allowed
       return 'Error: SheetsAI API key not set. Please set it via SheetsAI Menu.';
+    } finally {
+      // Track function call (without the query content)
+      const analytics = PostHogAnalytics.getInstance();
+      analytics.track(acMain.EVENTS.FUNCTION_CALL, {
+        hasContext: !!context,
+        missingApiKey: !apiKey,
+      });
     }
     return;
   }
@@ -70,7 +81,12 @@ export async function SHEETS_AI(
   }
   const usageService = new LLMUsageService();
   try {
-    const openai = new OpenAIProvider('gpt-4o-mini', apiKey);
+    // Get user's preferred model or use default
+    const userModel =
+      (secretService.getSecret('USER_OPENAI_MODEL') as OpenAiTextModelNames) ||
+      getDefaultModelMain('openai');
+
+    const openai = new OpenAIProvider(userModel, apiKey);
     const completion = await openai.generateChatCompletion({
       messages: [
         {
@@ -85,6 +101,8 @@ export async function SHEETS_AI(
 
     // Cache the result for 6 hours
     cache.put(cacheKey, completion.text, CACHE_TTL_SECONDS);
+    completionTextLength = completion.text.length;
+    selectedModel = userModel;
 
     return completion.text;
   } catch (error: Error | any) {
@@ -92,6 +110,15 @@ export async function SHEETS_AI(
     throw new SheetsAIError(
       'Failed to make Open AI call: please make sure your API key is correct!'
     );
+  } finally {
+    // Track function call (without the query content)
+    const analytics = PostHogAnalytics.getInstance();
+    analytics.track(acMain.EVENTS.FUNCTION_CALL, {
+      hasContext: !!context,
+      queryLength: query.length,
+      responseLength: completionTextLength,
+      selectedModel: selectedModel,
+    });
   }
 }
 
@@ -207,29 +234,47 @@ export function listLLMProviders(): Map<LLMProviders, string> {
 export function getStoredApiKey(provider: LLMProviders): {
   key: string;
   instructionUrl: string;
+  model?: string;
 } {
   const secretService = new SecretService();
   const instructionUrl = getApiKeyInstructions(provider);
   switch (provider) {
     case 'openai':
       const key = secretService.getSecret('USER_OPENAI_KEY');
+      const model =
+        secretService.getSecret('USER_OPENAI_MODEL') ||
+        getDefaultModelMain(provider);
       const returnKey = key ? key.substring(0, 16) + '********' : '';
-      return { key: returnKey, instructionUrl };
+      return { key: returnKey, instructionUrl, model };
     default:
       throw new SheetsAIError('Invalid LLM Provider selected: ' + provider);
   }
 }
 
-// Function to set the OpenAI API key
-export function saveApiKey(provider: LLMProviders, key: string) {
+// Function to set the OpenAI API key and model
+export function saveApiKey(
+  provider: LLMProviders,
+  key?: string,
+  model?: string
+) {
   switch (provider) {
     case 'openai':
       const secretService = new SecretService();
-      secretService.setSecret('USER_OPENAI_KEY', key);
+      if (key) {
+        secretService.setSecret('USER_OPENAI_KEY', key);
+      }
+
+      // Save model if provided
+      if (model) {
+        secretService.setSecret('USER_OPENAI_MODEL', model);
+      }
 
       // Track API key set event (without the key itself)
       const analytics = PostHogAnalytics.getInstance();
-      analytics.track(acMain.EVENTS.API_KEY_SET, { provider });
+      analytics.track(acMain.EVENTS.API_KEY_SET, {
+        provider,
+        modelChanged: !!model,
+      });
 
       return `OpenAI API Key saved successfully!`;
     default:
@@ -283,4 +328,11 @@ function setAnalyticsStatus(optOut: boolean): boolean {
   analytics.setOptOut(optOut);
 
   return optOut;
+}
+
+// Get available models from OpenAI API
+export async function getAvailableModels(
+  provider: LLMProviders
+): Promise<string[]> {
+  return fetchAvailableModelsMain(provider);
 }

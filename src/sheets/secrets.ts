@@ -1,7 +1,8 @@
-type SecretKey = 'USER_OPENAI_KEY';
+type SecretKey = 'USER_OPENAI_KEY' | 'USER_OPENAI_MODEL';
 
 type SecretMap = {
   USER_OPENAI_KEY: string;
+  USER_OPENAI_MODEL: string;
 };
 
 export class SecretService {
